@@ -9,6 +9,9 @@ const PORT = 3001;
 
 app.use(cors());
 
+const targetBaseFolder = '/Users/cmm1158/Desktop/FilesToPrint';
+app.use('/images', express.static(targetBaseFolder));
+
 const SHIPSTATION_API_KEY = '2d67b318fa06467d94c9c159aa987f5d';
 const SHIPSTATION_API_SECRET = '14ccebfdb07748748663e66fa98c3a28';
 
@@ -16,7 +19,6 @@ const copyPng = (sku, orderNumber, store, copyIndex = 1) => {
   const suffix = copyIndex > 1 ? `-${copyIndex}` : '';
   const pngFileName = `${sku}-${orderNumber}${suffix}.png`;
   const sourceFolder = path.join(__dirname, 'sourcePNGs');
-  const targetBaseFolder = '/Users/cmm1158/Desktop/FilesToPrint';
   const storeFolder = path.join(targetBaseFolder, store);
   const sourcePngPath = path.join(sourceFolder, `${sku}.png`);
   const targetPngPath = path.join(storeFolder, pngFileName);
