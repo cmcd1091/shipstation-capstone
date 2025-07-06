@@ -78,9 +78,9 @@ app.get('/fetch-transfers', async (req, res) => {
 
     const { copiedFiles, skippedOrders } = await fetchTransfers(storeId, store, pageSize);
 
-    let message = `Transfers fetched for ${store}.`;
+    let message = '';
     if (copiedFiles.length > 0) {
-      message += ` Files copied successfully.`;
+      message += ` ${copiedFiles.length} files copied successfully.`;
     } else {
       message += ` No files were copied.`;
     }
