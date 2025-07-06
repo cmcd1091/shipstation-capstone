@@ -8,6 +8,7 @@ const CopiedContainer = ({ files, selectedStore }) => {
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
+        justifyContent: 'center',
         marginBottom: '0.5rem',
         listStyle: 'none'
       }}>

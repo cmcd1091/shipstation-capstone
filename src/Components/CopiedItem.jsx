@@ -10,16 +10,12 @@ const CopiedItem = ({ file, selectedStore }) => {
 
   return (
     <>
-      <li style={{
-        margin: '1rem',
-        textAlign: 'center'
-      }}>
+      <li style={{margin: '1rem'}}>
         <img
           src={`http://localhost:3001/images/${selectedStore}/${file}`}
           alt={file}
           style={{ 
             width: '100px',
-            marginRight: '1rem',
             border: '1px solid #ccc'
           }}
         />

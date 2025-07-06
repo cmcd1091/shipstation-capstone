@@ -15,7 +15,7 @@ app.use('/images', express.static(targetBaseFolder));
 const SHIPSTATION_API_KEY = '2d67b318fa06467d94c9c159aa987f5d';
 const SHIPSTATION_API_SECRET = '14ccebfdb07748748663e66fa98c3a28';
 
-const fetchTransfers = async (storeId, store) => {
+const fetchTransfers = async (storeId, store, pageSize) => {
   const auth = Buffer.from(`${SHIPSTATION_API_KEY}:${SHIPSTATION_API_SECRET}`).toString('base64');
 
   const response = await axios.get('https://ssapi.shipstation.com/orders', {
@@ -25,16 +25,18 @@ const fetchTransfers = async (storeId, store) => {
     params: {
       orderStatus: 'awaiting_shipment',
       storeid: storeId,
-      pageSize: 5,
+      pageSize,
     },
   });
 
   const orders = response.data.orders;
   const copiedFiles = [];
-  const printedTag = 111476;
+  const skippedOrders = [];
+  const PRINTED_TAG = 111476;
 
   for (const order of orders) {
-    if (order.tagIds && order.tagIds.includes(printedTag)) {
+    if (order.tagIds && order.tagIds.includes(PRINTED_TAG)) {
+      skippedOrders.push(order.orderNumber);
       continue;
     }
     for (const item of order.items) {
@@ -47,17 +49,25 @@ const fetchTransfers = async (storeId, store) => {
     }
   }
 
-  return copiedFiles;
+  return { copiedFiles, skippedOrders };
 };
 
 app.get('/fetch-transfers', async (req, res) => {
   try {
     const store = req.query.store;
+    const pageSize = req.query.pageSize ? parseInt(req.query.pageSize, 10) : 5;
 
     const storeMap = {
+      alcolo: 516232,
       coed: 521077,
       duke: 506068,
-      tony: 521079,
+      dukeTT: 519357,
+      eighties: 503161,
+      jakey: 519376,
+      mo: 521880,
+      michaels: 313127,
+      slick: 514521,
+      tony: 498451,
     };
 
     const storeId = storeMap[store];
@@ -66,16 +76,16 @@ app.get('/fetch-transfers', async (req, res) => {
       return res.status(400).json({ error: 'Invalid or missing store parameter' });
     }
 
-    const copiedFiles = await fetchTransfers(storeId, store);
+    const { copiedFiles, skippedOrders } = await fetchTransfers(storeId, store, pageSize);
 
     let message = `Transfers fetched for ${store}.`;
     if (copiedFiles.length > 0) {
       message += ` Files copied successfully.`;
     } else {
-    message += ` No files were copied.`;
+      message += ` No files were copied.`;
     }
 
-    res.json({ message, files: copiedFiles });
+    res.json({ message, files: copiedFiles, skippedOrders});
   } catch (error) {
     console.error(error);
     res.status(500).send('Error fetching transfers');

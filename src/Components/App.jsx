@@ -1,22 +1,46 @@
 import { useState } from "react"
-import CopyButton from "./CopyButton"
+import CopyButtons from "./CopyButtons"
 import CopiedContainer from "./CopiedContainer"
 
 const App = () => {
+  const [pageSize, setPageSize] = useState(5)
   const [files, setFiles] = useState([]);
   const [message, setMessage] = useState('');
+  const [skipped, setSkipped] = useState([]);
   const [selectedStore, setSelectedStore] = useState('');
 
   return (
     <>
-      <div style={{ margin: '0 auto', padding: '1rem', fontFamily: 'Arial, sans-serif' }}>
+      <div style={{ margin: '0 auto', padding: '1rem', fontFamily: 'Arial, sans-serif', textAlign: 'center'}}>
         <h1>Shipstation App</h1>
-        <CopyButton 
+        <div>
+          <label>
+            Page size:
+            <input
+              type='number'
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+            />
+          </label>
+        </div>
+        <CopyButtons 
+          pageSize={pageSize}
           setFiles={setFiles}
           setMessage={setMessage}
+          setSkipped={setSkipped}
           setSelectedStore={setSelectedStore}
         />
         {message && <p>{message}</p>}
+        {skipped.length > 0 && (
+          <div>
+            <p>Skipped orders:</p>
+            <ul style={{listStyle: 'none'}}>
+              {skipped.map((order, idx) => (
+                <li key={idx}>{order}</li>
+              ))}
+            </ul>
+          </div>
+        )}
         <CopiedContainer files={files} selectedStore={selectedStore}/>
       </div>
     </>
