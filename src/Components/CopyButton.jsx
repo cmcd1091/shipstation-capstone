@@ -1,11 +1,6 @@
-import { useState } from 'react';
 import axios from 'axios';
-import CopiedItem from './CopiedItem';
 
-const CopyButton = () => {
-  const [files, setFiles] = useState([]);
-  const [message, setMessage] = useState('');
-  const [selectedStore, setSelectedStore] = useState('');
+const CopyButton = ({ setSelectedStore, setMessage, setFiles }) => {
 
   const fetchTransfers = async (store) => {
     setSelectedStore(store);
@@ -24,22 +19,6 @@ const CopyButton = () => {
       <button onClick={() => fetchTransfers('coed')}>Fetch Coed transfers</button>
       <button onClick={() => fetchTransfers('duke')}>Fetch Duke transfers</button>
       <button onClick={() => fetchTransfers('tony')}>Fetch Tony transfers</button>
-
-      {message && <p>{message}</p>}
-      {files.length > 0 && (
-        <ul style={{ 
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          marginBottom: '0.5rem',
-          listStyle: 'none'
-        }}>
-          
-          {files.map((file, idx) => (
-            <CopiedItem file={file} selectedStore={selectedStore} key={idx}/>
-          ))}
-        </ul>
-      )}
     </>
   )
 };
