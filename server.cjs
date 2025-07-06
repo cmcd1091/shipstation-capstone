@@ -15,29 +15,6 @@ app.use('/images', express.static(targetBaseFolder));
 const SHIPSTATION_API_KEY = '2d67b318fa06467d94c9c159aa987f5d';
 const SHIPSTATION_API_SECRET = '14ccebfdb07748748663e66fa98c3a28';
 
-const copyPng = (sku, orderNumber, store, copyIndex = 1) => {
-  const suffix = copyIndex > 1 ? `-${copyIndex}` : '';
-  const pngFileName = `${sku}-${orderNumber}${suffix}.png`;
-  const sourceFolder = path.join(__dirname, 'sourcePNGs');
-  const storeFolder = path.join(targetBaseFolder, store);
-  const sourcePngPath = path.join(sourceFolder, `${sku}.png`);
-  const targetPngPath = path.join(storeFolder, pngFileName);
-
-  if (!fs.existsSync(sourcePngPath)) {
-    console.error(`PNG not found: ${sourcePngPath}`);
-    return null;
-  }
-
-  if (!fs.existsSync(storeFolder)) {
-    fs.mkdirSync(storeFolder, { recursive: true });
-    console.log(`Created target folder: ${storeFolder}`);
-  }
-
-  fs.copyFileSync(sourcePngPath, targetPngPath);
-
-  return pngFileName;
-};
-
 const fetchTransfers = async (storeId, store) => {
   const auth = Buffer.from(`${SHIPSTATION_API_KEY}:${SHIPSTATION_API_SECRET}`).toString('base64');
 
@@ -56,6 +33,10 @@ const fetchTransfers = async (storeId, store) => {
   const copiedFiles = [];
 
   for (const order of orders) {
+    const printedTag = 111476;
+    if (order.tagIds && order.tagIds.includes(printedTag)) {
+      continue;
+    }
     for (const item of order.items) {
       for (let i = 1; i <= item.quantity; i++) {
         const copied = copyPng(item.sku, order.orderNumber, store, i);
@@ -104,3 +85,26 @@ app.get('/fetch-transfers', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Server running at http://localhost:${PORT}`);
 });
+
+const copyPng = (sku, orderNumber, store, copyIndex = 1) => {
+  const suffix = copyIndex > 1 ? `-${copyIndex}` : '';
+  const pngFileName = `${sku}-${orderNumber}${suffix}.png`;
+  const sourceFolder = path.join(__dirname, 'sourcePNGs');
+  const targetStoreFolder = path.join(targetBaseFolder, store);
+  const sourcePngPath = path.join(sourceFolder, `${sku}.png`);
+  const targetPngPath = path.join(targetStoreFolder, pngFileName);
+
+  if (!fs.existsSync(sourcePngPath)) {
+    console.error(`PNG not found: ${sourcePngPath}`);
+    return null;
+  }
+
+  if (!fs.existsSync(targetStoreFolder)) {
+    fs.mkdirSync(targetStoreFolder, { recursive: true });
+    console.log(`Created target folder: ${targetStoreFolder}`);
+  }
+
+  fs.copyFileSync(sourcePngPath, targetPngPath);
+
+  return pngFileName;
+};

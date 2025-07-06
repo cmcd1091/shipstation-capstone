@@ -11,6 +11,7 @@ const CopyButton = () => {
     try {
       const res = await axios.get(`http://localhost:3001/fetch-transfers?store=${store}`);
       setMessage(res.data.message);
+      console.log(res)
       setFiles(res.data.files)
     } catch (error) {
       setMessage('Error: ' + (error.response?.data || error.message));
