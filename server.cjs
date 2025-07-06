@@ -31,9 +31,9 @@ const fetchTransfers = async (storeId, store) => {
 
   const orders = response.data.orders;
   const copiedFiles = [];
+  const printedTag = 111476;
 
   for (const order of orders) {
-    const printedTag = 111476;
     if (order.tagIds && order.tagIds.includes(printedTag)) {
       continue;
     }
@@ -88,11 +88,11 @@ app.listen(PORT, () => {
 
 const copyPng = (sku, orderNumber, store, copyIndex = 1) => {
   const suffix = copyIndex > 1 ? `-${copyIndex}` : '';
-  const pngFileName = `${sku}-${orderNumber}${suffix}.png`;
+  const pngCopyName = `${sku}-${orderNumber}${suffix}.png`;
   const sourceFolder = path.join(__dirname, 'sourcePNGs');
   const targetStoreFolder = path.join(targetBaseFolder, store);
   const sourcePngPath = path.join(sourceFolder, `${sku}.png`);
-  const targetPngPath = path.join(targetStoreFolder, pngFileName);
+  const targetPngPath = path.join(targetStoreFolder, pngCopyName);
 
   if (!fs.existsSync(sourcePngPath)) {
     console.error(`PNG not found: ${sourcePngPath}`);
@@ -106,5 +106,5 @@ const copyPng = (sku, orderNumber, store, copyIndex = 1) => {
 
   fs.copyFileSync(sourcePngPath, targetPngPath);
 
-  return pngFileName;
+  return pngCopyName;
 };
