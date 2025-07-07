@@ -24,7 +24,7 @@ const CopiedItem = ({ file, selectedStore }) => {
             border: '1px solid #ccc'
           }}
         />
-        <div>Order number: {orderPart}</div>
+        <div>Order: {orderPart}</div>
         {/* <div>SKU: {skuPart}</div> */}
       </li>
     </>

@@ -10,6 +10,7 @@ const CopiedContainer = ({ files, selectedStore }) => {
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: '0.5rem',
+        paddingLeft: '0px',
         listStyle: 'none'
       }}>
         

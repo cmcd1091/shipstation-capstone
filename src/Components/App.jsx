@@ -1,6 +1,7 @@
 import { useState } from "react"
-import CopyButtons from "./CopyButtons"
+import FetchParams from "./FetchParams"
 import CopiedContainer from "./CopiedContainer"
+import './App.css'
 
 const App = () => {
   const [pageSize, setPageSize] = useState(5)
@@ -12,19 +13,10 @@ const App = () => {
   return (
     <>
       <div style={{ margin: '0 auto', padding: '1rem', fontFamily: 'Arial, sans-serif', textAlign: 'center'}}>
-        <h1>Shipstation App</h1>
-        <div>
-          <label>
-            Page size:
-            <input
-              type='number'
-              value={pageSize}
-              onChange={(e) => setPageSize(Number(e.target.value))}
-            />
-          </label>
-        </div>
-        <CopyButtons 
+        <h1>Shipstation Transfers</h1>
+        <FetchParams 
           pageSize={pageSize}
+          setPageSize={setPageSize}
           setFiles={setFiles}
           setMessage={setMessage}
           setSkipped={setSkipped}

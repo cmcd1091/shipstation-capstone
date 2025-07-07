@@ -73,14 +73,15 @@ app.get('/fetch-transfers', async (req, res) => {
     const storeId = storeMap[store];
 
     if (!storeId) {
-      return res.status(400).json({ error: 'Invalid or missing store parameter' });
+      // return res.status(400).json({ error: 'Invalid or missing store parameter' });
+      console.log("errorrrrr")
     }
 
     const { copiedFiles, skippedOrders } = await fetchTransfers(storeId, store, pageSize);
 
     let message = '';
     if (copiedFiles.length > 0) {
-      message += ` ${copiedFiles.length} files copied successfully.`;
+      message += ` ${copiedFiles.length} files copied successfully`;
     } else {
       message += ` No files were copied.`;
     }
