@@ -1,5 +1,5 @@
 const CopiedItem = ({ file, selectedStore }) => {
-  const parseFileName = (file) => {
+  const parseFileDisplay = (file) => {
     const fileWithoutExt = file.replace('.png', '');
     // console.log(fileWithoutExt)
     const splitIndex = fileWithoutExt.lastIndexOf('-CN-');

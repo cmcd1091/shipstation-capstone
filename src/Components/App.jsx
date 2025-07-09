@@ -1,7 +1,7 @@
 import { useState } from "react"
 import FetchParams from "./FetchParams"
 import CopiedContainer from "./CopiedContainer"
-import './App.css'
+import '../Styling/App.css'
 
 const App = () => {
   const [pageSize, setPageSize] = useState(5)

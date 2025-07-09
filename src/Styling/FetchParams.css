@@ -1,0 +1,29 @@
+button {
+  background-color: #10928f;
+  border: 2px solid rgb(0, 0, 0);
+  color: white;
+  padding: 0.5rem 1rem;
+  margin: 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0c8482;
+}
+
+select {
+  height: 30px;
+  margin-bottom: 5px;
+  margin-left: 0.5rem;
+  text-align: center;
+}
+
+input {
+  width: 60px;
+  height: 30px;
+  text-align: center;
+  padding-left: 10px;
+  padding-right: 0px;
+  margin-left: .5rem;
+}
