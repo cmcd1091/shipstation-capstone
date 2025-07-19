@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 const cors = require('cors');
+require('dotenv').config();
+
 
 const app = express();
 const PORT = 3001;
@@ -12,8 +14,8 @@ app.use(cors());
 const targetBaseFolder = '/Users/cmm1158/Desktop/FilesToPrint';
 app.use('/images', express.static(targetBaseFolder));
 
-const SHIPSTATION_API_KEY = '2d67b318fa06467d94c9c159aa987f5d';
-const SHIPSTATION_API_SECRET = '14ccebfdb07748748663e66fa98c3a28';
+const SHIPSTATION_API_KEY = process.env.SHIPSTATION_API_KEY;
+const SHIPSTATION_API_SECRET = process.env.SHIPSTATION_API_SECRET;
 
 const fetchTransfers = async (storeId, store, pageSize) => {
   const auth = Buffer.from(`${SHIPSTATION_API_KEY}:${SHIPSTATION_API_SECRET}`).toString('base64');
