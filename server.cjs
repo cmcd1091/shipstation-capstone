@@ -17,6 +17,8 @@ app.use('/images', express.static(targetBaseFolder));
 const SHIPSTATION_API_KEY = process.env.SHIPSTATION_API_KEY;
 const SHIPSTATION_API_SECRET = process.env.SHIPSTATION_API_SECRET;
 
+console.log('KEY present?', !!SHIPSTATION_API_KEY, 'SECRET present?', !!SHIPSTATION_API_SECRET);
+
 const fetchTransfers = async (storeId, store, pageSize) => {
   const auth = Buffer.from(`${SHIPSTATION_API_KEY}:${SHIPSTATION_API_SECRET}`).toString('base64');
 
@@ -89,9 +91,15 @@ app.get('/fetch-transfers', async (req, res) => {
 
     res.json({ message, files: copiedFiles, skippedOrders});
   } catch (error) {
-    console.error(error);
-    res.status(500).send('Error fetching transfers');
-  }
+  console.error('Error fetching transfers from ShipStation:');
+  console.error('Status:', error.response?.status);
+  console.error('Data:', error.response?.data);
+  console.error('Message:', error.message);
+
+  res
+    .status(500)
+    .send(error.response?.data || error.message || 'Error fetching transfers');
+}
 });
 
 app.listen(PORT, () => {
@@ -99,15 +107,20 @@ app.listen(PORT, () => {
 });
 
 const copyPng = (sku, orderNumber, store, copyIndex = 1) => {
+  const baseSku = String(sku).slice(0, 6);
+
   const suffix = copyIndex > 1 ? `-${copyIndex}` : '';
+
   const pngCopyName = `${sku}-${orderNumber}${suffix}.png`;
+
   const sourceFolder = path.join(__dirname, 'sourcePNGs');
   const targetStoreFolder = path.join(targetBaseFolder, store);
-  const sourcePngPath = path.join(sourceFolder, `${sku}.png`);
+
+  const sourcePngPath = path.join(sourceFolder, `${baseSku}.png`);
   const targetPngPath = path.join(targetStoreFolder, pngCopyName);
 
   if (!fs.existsSync(sourcePngPath)) {
-    console.error(`PNG not found: ${sourcePngPath}`);
+    console.error(`PNG not found for base SKU "${baseSku}" (full sku "${sku}"): ${sourcePngPath}`);
     return null;
   }
 
