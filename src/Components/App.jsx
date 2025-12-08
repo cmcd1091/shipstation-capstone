@@ -12,14 +12,6 @@ const App = () => {
   const [skipped, setSkipped] = useState([]);
   const [selectedStore, setSelectedStore] = useState("");
 
-  const [token, setToken] = useState(null);
-  const [userEmail, setUserEmail] = useState("");
-
-  const handleLogin = (newToken, email) => {
-    setToken(newToken);
-    setUserEmail(email);
-  };
-
   return (
     <>
       <div
@@ -57,9 +49,8 @@ const App = () => {
         <CopiedContainer files={files} selectedStore={selectedStore} />
 
         {/* Auth + Admin */}
-        <LoginForm onLogin={handleLogin} token={token} userEmail={userEmail} />
-
-        <TransfersAdmin token={token} />
+        <LoginForm />
+        <TransfersAdmin />
       </div>
     </>
   );

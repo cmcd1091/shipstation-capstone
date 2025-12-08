@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { useAppContext } from "../context/AppContext";
 
-const TransfersAdmin = ({ token }) => {
+const TransfersAdmin = () => {
+  const { token } = useAppContext();
   const [transfers, setTransfers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

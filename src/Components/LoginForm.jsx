@@ -1,8 +1,9 @@
 import { useState } from "react";
 import axios from "axios";
+import { useAppContext } from "../context/AppContext";
 
-const LoginForm = ({ onLogin, token, userEmail }) => {
-  const [email, setEmail] = useState(userEmail || "admin@example.com");
+const LoginForm = () => {
+  const { token, setToken, userEmail, setUserEmail } = useAppContext();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -11,15 +12,14 @@ const LoginForm = ({ onLogin, token, userEmail }) => {
     try {
       setError("");
       const res = await axios.post("http://localhost:3001/api/auth/login", {
-        email,
+        email: userEmail,
         password,
       });
-      onLogin(res.data.token, res.data.email);
+      setToken(res.data.token);
+      setUserEmail(res.data.email);
       setPassword("");
     } catch (err) {
-      setError(
-        err.response?.data?.error || err.message || "Login failed"
-      );
+      setError(err.response?.data?.error || err.message || "Login failed");
     }
   };
 
@@ -42,8 +42,8 @@ const LoginForm = ({ onLogin, token, userEmail }) => {
             Email:{" "}
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={userEmail}
+              onChange={(e) => setUserEmail(e.target.value)}
               required
               style={{ padding: "0.25rem" }}
             />
