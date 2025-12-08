@@ -30,15 +30,15 @@ const FetchParams = ({ pageSize, setPageSize, setSelectedStore, setMessage, setF
     <>
       Store:
       <select defaultValue='' onChange={handleChange}>
-        <option value='alcolo'>Alcolo</option>
+        {/* <option value='alcolo'>Alcolo</option> */}
         <option value='coed'>Coed Naked</option>
         <option value='duke'>Duke Gomez</option>
-        <option value='dukeTT'>Duke Gomez Tik Tok</option>
+        {/* <option value='dukeTT'>Duke Gomez Tik Tok</option>
         <option value='jakey'>Jakey Botch</option>
         <option value='mo'>Lil Mo</option>
         <option value='michaels'>Michael's</option>
         <option value='slick'>Slick Stevie</option>
-        <option value='tony'>Too Turnt Tony</option>
+        <option value='tony'>Too Turnt Tony</option> */}
       </select>
       
       <div>
