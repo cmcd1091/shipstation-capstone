@@ -3,14 +3,23 @@ import '../Styling/FetchParams.css';
 import { useState } from 'react';
 
 const FetchParams = ({ pageSize, setPageSize, setSelectedStore, setMessage, setFiles, setSkipped }) => {
-  const [localStore, setLocalStore] = useState('')
+  // Default to 'coed' so we always have a valid store
+  const [localStore, setLocalStore] = useState('coed');
 
   const fetchTransfers = async (store) => {
+    if (!store) {
+      setMessage('Please select a store before fetching.');
+      return;
+    }
+
     setFiles([]);
     setSkipped([]);
     setSelectedStore(store);
+
     try {
-      const res = await axios.get(`http://localhost:3001/fetch-transfers?store=${store}&pageSize=${pageSize}`);
+      const res = await axios.get(
+        `http://localhost:3001/fetch-transfers?store=${store}&pageSize=${pageSize}`
+      );
       setMessage(res.data.message);
       setFiles(res.data.files);
       setSkipped(res.data.skippedOrders);
@@ -21,15 +30,13 @@ const FetchParams = ({ pageSize, setPageSize, setSelectedStore, setMessage, setF
 
   const handleChange = (e) => {
     const store = e.target.value;
-    if (store) {
-      setLocalStore(store);
-    }
-  }
+    setLocalStore(store);
+  };
 
   return (
     <>
       Store:
-      <select defaultValue='' onChange={handleChange}>
+      <select value={localStore} onChange={handleChange}>
         {/* <option value='alcolo'>Alcolo</option> */}
         <option value='coed'>Coed Naked</option>
         <option value='duke'>Duke Gomez</option>
@@ -40,23 +47,23 @@ const FetchParams = ({ pageSize, setPageSize, setSelectedStore, setMessage, setF
         <option value='slick'>Slick Stevie</option>
         <option value='tony'>Too Turnt Tony</option> */}
       </select>
-      
+
       <div>
-          <label>
-            Number of orders:
-            <input
-              type='number'
-              value={pageSize}
-              onChange={(e) => setPageSize(Number(e.target.value))}
-            />
-          </label>
-        </div>
+        <label>
+          Number of orders:
+          <input
+            type='number'
+            value={pageSize}
+            onChange={(e) => setPageSize(Number(e.target.value))}
+          />
+        </label>
+      </div>
 
       <div>
         <button onClick={() => fetchTransfers(localStore)}>Fetch & Copy</button>
       </div>
     </>
-  )
+  );
 };
 
 export default FetchParams;
