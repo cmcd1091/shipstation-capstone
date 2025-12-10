@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./Components/App";
+import App from "../frontend/app/components/App";
 import { AppProvider } from "./context/AppContext";
 import "./Styling/App.css";
 

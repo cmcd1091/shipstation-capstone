@@ -3,7 +3,6 @@ import FetchParams from "./FetchParams";
 import CopiedContainer from "./CopiedContainer";
 import TransfersAdmin from "./TransfersAdmin";
 import LoginForm from "./LoginForm";
-import "../Styling/App.css";
 
 const App = () => {
   const [pageSize, setPageSize] = useState(5);

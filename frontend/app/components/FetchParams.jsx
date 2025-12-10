@@ -1,5 +1,4 @@
 import axios from 'axios';
-import '../Styling/FetchParams.css';
 import { useState } from 'react';
 
 const FetchParams = ({ pageSize, setPageSize, setSelectedStore, setMessage, setFiles, setSkipped }) => {

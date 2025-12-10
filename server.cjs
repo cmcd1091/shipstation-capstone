@@ -9,10 +9,15 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const app = express();
-const PORT = 3001;
 
 // ---------- MIDDLEWARE ----------
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  })
+);
+
 app.use(express.json()); // for JSON bodies
 
 // ---------- STATIC FILES ----------
@@ -327,9 +332,9 @@ app.delete('/api/transfers/:id', authMiddleware, async (req, res) => {
 });
 
 // ---------- SERVER START ----------
-app.listen(PORT, () => {
-  console.log(`✅ Server running at http://localhost:${PORT}`);
-});
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
 
 // ---------- FILE COPY HELPER ----------
 const copyPng = (sku, orderNumber, store, copyIndex = 1) => {
