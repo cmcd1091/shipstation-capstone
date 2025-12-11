@@ -13,7 +13,7 @@ const SHIPSTATION_API_SECRET = process.env.SHIPSTATION_API_SECRET;
 
 // root of project (same on Render and local)
 const ROOT_DIR = process.cwd();
-const SOURCE_PNG_FOLDER = path.join(ROOT_DIR, "sourcePNGs");
+const SOURCE_PNG_FOLDER = path.join(ROOT_DIR, "public", "sourcePNGs");
 const TARGET_BASE_FOLDER = path.join(ROOT_DIR, "FilesToPrint");
 
 // helper to copy a single PNG file

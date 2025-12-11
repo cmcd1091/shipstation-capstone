@@ -1,5 +1,3 @@
-console.log("🚨 IMAGE ROUTE LOADED");
-
 import { NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import fs from "fs";
@@ -14,16 +12,16 @@ export async function GET(request, { params }) {
 
     const { file } = params;
 
-    // extract base SKU — CN-613HG-M-CN-3827.png → CN-613.png
-    const baseSku = file.split(/[-_]/)[0] + ".png";
+    // Extract base SKU: CN-506HG-M-CN-3827.png → CN-506.png
+    const match = file.match(/^[A-Za-z]+-\d+/);
+    const baseSku = match ? match[0] + ".png" : file;
 
-    // FIXED PATH — MUST include "public"
     const imagePath = path.join(process.cwd(), "public", "sourcePNGs", baseSku);
 
-    console.log("🔎 Checking image path:", imagePath);
+    console.log("🔎 Checking:", imagePath);
 
     if (!fs.existsSync(imagePath)) {
-      console.error(`❌ PNG not found at ${imagePath}`);
+      console.error(`❌ PNG not found for base SKU "${baseSku}" at ${imagePath}`);
       return NextResponse.json({ error: "Image not found" }, { status: 404 });
     }
 
