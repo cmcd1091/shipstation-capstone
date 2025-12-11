@@ -1,13 +1,23 @@
-import axios from 'axios';
-import { useState } from 'react';
+"use client";
 
-const FetchParams = ({ pageSize, setPageSize, setSelectedStore, setMessage, setFiles, setSkipped }) => {
-  // Default to 'coed' so we always have a valid store
-  const [localStore, setLocalStore] = useState('coed');
+import axios from "axios";
+import { useState } from "react";
+
+const FetchParams = ({
+  pageSize,
+  setPageSize,
+  setSelectedStore,
+  setMessage,
+  setFiles,
+  setSkipped,
+}) => {
+  const [localStore, setLocalStore] = useState("coed");
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
   const fetchTransfers = async (store) => {
     if (!store) {
-      setMessage('Please select a store before fetching.');
+      setMessage("Please select a store before fetching.");
       return;
     }
 
@@ -16,53 +26,54 @@ const FetchParams = ({ pageSize, setPageSize, setSelectedStore, setMessage, setF
     setSelectedStore(store);
 
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
-      const res = await axios.get(`${API_BASE}/fetch-transfers?store=${store}&pageSize=${pageSize}`);
+      const res = await axios.get(
+        `${API_BASE}/fetch-transfers?store=${store}&pageSize=${pageSize}`
+      );
 
       setMessage(res.data.message);
       setFiles(res.data.files);
       setSkipped(res.data.skippedOrders);
     } catch (error) {
-      setMessage('Error: ' + (error.response?.data || error.message));
+      setMessage("Error: " + (error.response?.data || error.message));
     }
   };
 
-  const handleChange = (e) => {
-    const store = e.target.value;
-    setLocalStore(store);
-  };
-
   return (
-    <>
-      Store:
-      <select value={localStore} onChange={handleChange}>
-        {/* <option value='alcolo'>Alcolo</option> */}
-        <option value='coed'>Coed Naked</option>
-        <option value='duke'>Duke Gomez</option>
-        {/* <option value='dukeTT'>Duke Gomez Tik Tok</option>
-        <option value='jakey'>Jakey Botch</option>
-        <option value='mo'>Lil Mo</option>
-        <option value='michaels'>Michael's</option>
-        <option value='slick'>Slick Stevie</option>
-        <option value='tony'>Too Turnt Tony</option> */}
-      </select>
+    <div>
+      <label>
+        Store:
+        <select
+          value={localStore}
+          onChange={(e) => setLocalStore(e.target.value)}
+          style={{ marginLeft: "0.5rem" }}
+        >
+          <option value="coed">Coed Naked</option>
+          <option value="duke">Duke Gomez</option>
+        </select>
+      </label>
 
-      <div>
+      <div style={{ marginTop: "0.5rem" }}>
         <label>
           Number of orders:
           <input
-            type='number'
+            type="number"
             value={pageSize}
             onChange={(e) => setPageSize(Number(e.target.value))}
+            style={{
+              padding: "0.3rem",
+              marginLeft: "0.5rem",
+            }}
           />
         </label>
       </div>
 
-      <div>
-        <button onClick={() => fetchTransfers(localStore)}>Fetch & Copy</button>
-      </div>
-    </>
+      <button
+        onClick={() => fetchTransfers(localStore)}
+        style={{ marginTop: "0.75rem" }}
+      >
+        Fetch & Copy
+      </button>
+    </div>
   );
 };
 

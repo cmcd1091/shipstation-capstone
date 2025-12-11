@@ -1,57 +1,45 @@
+"use client";
+
 import { useState } from "react";
+import { useAppContext } from "../context/AppContext";
 import FetchParams from "./FetchParams";
 import CopiedContainer from "./CopiedContainer";
 import TransfersAdmin from "./TransfersAdmin";
-import LoginForm from "./LoginForm";
 
 const App = () => {
-  const [pageSize, setPageSize] = useState(5);
-  const [files, setFiles] = useState([]);
-  const [message, setMessage] = useState("");
-  const [skipped, setSkipped] = useState([]);
+  const { token } = useAppContext();
+
+  // All required state hooks
+  const [pageSize, setPageSize] = useState(10);
   const [selectedStore, setSelectedStore] = useState("");
+  const [message, setMessage] = useState("");
+  const [files, setFiles] = useState([]);
+  const [skipped, setSkipped] = useState([]);
 
   return (
-    <>
-      <div
-        style={{
-          margin: "0 auto",
-          padding: "1rem",
-          fontFamily: "Arial, sans-serif",
-          textAlign: "center",
-        }}
-      >
-        <h1>Shipstation Transfers</h1>
+    <div style={{ padding: "1rem" }}>
+      <h1>ShipStation Transfer Utility</h1>
 
-        <FetchParams
-          pageSize={pageSize}
-          setPageSize={setPageSize}
-          setFiles={setFiles}
-          setMessage={setMessage}
-          setSkipped={setSkipped}
-          setSelectedStore={setSelectedStore}
-        />
+      {!token && <p style={{ color: "red" }}>Please log in to access admin features.</p>}
 
-        {message && <p>{message}</p>}
+      <FetchParams
+        pageSize={pageSize}
+        setPageSize={setPageSize}
+        setSelectedStore={setSelectedStore}
+        setMessage={setMessage}
+        setFiles={setFiles}
+        setSkipped={setSkipped}
+      />
 
-        {skipped.length > 0 && (
-          <div>
-            <p>Skipped orders:</p>
-            <ul style={{ listStyle: "none" }}>
-              {skipped.map((order, idx) => (
-                <li key={idx}>{order}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+      <CopiedContainer files={files} selectedStore={selectedStore} />
 
-        <CopiedContainer files={files} selectedStore={selectedStore} />
-
-        {/* Auth + Admin */}
-        <LoginForm />
-        <TransfersAdmin />
-      </div>
-    </>
+      {token && (
+        <>
+          <h2>Admin</h2>
+          <TransfersAdmin />
+        </>
+      )}
+    </div>
   );
 };
 
