@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { NextResponse } from "next/server";
-import { auth } from "../../auth"; // adjust if your auth path differs
+import { auth } from "@/lib/auth";
 
 // Extract base SKU from filenames like:
 // CN-506N-M-CN-3828.png → CN-506
@@ -26,7 +26,7 @@ function extractBaseSKU(filename) {
 
 export async function GET(request, { params }) {
   // --- AUTH ---
-  const session = await auth();
+  const session = await auth(request);
   if (!session) {
     return new NextResponse("Unauthorized", { status: 401 });
   }

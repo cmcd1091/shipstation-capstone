@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { auth } from "../auth";             // adjust if your auth middleware is in a different folder
+import { auth } from "@/lib/auth";
 import dbConnect from "@/lib/db";
 import Transfer from "@/models/Transfer";
 
 export async function GET() {
   try {
     // --- AUTH CHECK ---
-    const session = await auth();
+    const session = await auth(request);
     if (!session) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
@@ -36,7 +36,7 @@ export async function GET() {
 export async function POST(request) {
   try {
     // --- AUTH ---
-    const session = await auth();
+    const session = await auth(request);
     if (!session) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
