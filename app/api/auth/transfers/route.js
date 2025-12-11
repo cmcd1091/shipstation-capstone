@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getUserFromRequest } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Transfer from "@/models/Transfer";
 

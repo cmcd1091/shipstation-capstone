@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getUserFromRequest } from "@/lib/auth";
 
 // Extract base SKU from filenames like:
 // CN-506N-M-CN-3828.png → CN-506
