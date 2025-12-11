@@ -11,7 +11,9 @@ const LoginForm = () => {
     e.preventDefault();
     try {
       setError("");
-      const res = await axios.post("http://localhost:3001/api/auth/login", {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+      const res = await axios.post(`${API_BASE}/api/auth/login`, {
         email: userEmail,
         password,
       });

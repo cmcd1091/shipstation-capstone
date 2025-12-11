@@ -16,9 +16,10 @@ const FetchParams = ({ pageSize, setPageSize, setSelectedStore, setMessage, setF
     setSelectedStore(store);
 
     try {
-      const res = await axios.get(
-        `http://localhost:3001/fetch-transfers?store=${store}&pageSize=${pageSize}`
-      );
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+      const res = await axios.get(`${API_BASE}/fetch-transfers?store=${store}&pageSize=${pageSize}`);
+
       setMessage(res.data.message);
       setFiles(res.data.files);
       setSkipped(res.data.skippedOrders);

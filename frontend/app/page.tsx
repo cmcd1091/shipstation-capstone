@@ -1,12 +1,19 @@
 "use client";
 
+import { AppProvider, useAppContext } from "./context/AppContext";
 import App from "./components/App";
-import { AppProvider } from "./context/AppContext";
+import LoginForm from "./components/LoginForm";
 
 export default function Page() {
   return (
     <AppProvider>
-      <App />
+      <PageContent />
     </AppProvider>
   );
+}
+
+function PageContent() {
+  const { token } = useAppContext();
+
+  return token ? <App /> : <LoginForm />;
 }
