@@ -1,28 +1,16 @@
 import { NextResponse } from "next/server";
-import { getUserFromRequest } from "@/lib/auth";
 import fs from "fs";
 import path from "path";
 
 export async function GET(request, { params }) {
   try {
-    // --- AUTH ---
-    const user = getUserFromRequest(request);
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { file } = params;
 
-    // ---------------------------
-    // Extract base SKU correctly
-    // Example: CN-607N-L-CN-3836.png
-    // parts = ["CN", "607N", "L", "CN", "3836.png"]
-    // baseSku = "CN-607N.png"
-    // ---------------------------
+    // Extract base SKU (e.g., CN-607N-L-CN-3836.png → CN-607N.png)
     const parts = file.split("-");
     const baseSku = `${parts[0]}-${parts[1]}.png`;
 
-    // Build absolute path
+    // Path to public/sourcePNGs
     const imagePath = path.join(
       process.cwd(),
       "public",
@@ -32,16 +20,13 @@ export async function GET(request, { params }) {
 
     console.log("📁 Looking for image:", imagePath);
 
-    // Check file exists
     if (!fs.existsSync(imagePath)) {
       console.error(`❌ PNG not found: ${imagePath}`);
       return NextResponse.json({ error: "Image not found" }, { status: 404 });
     }
 
-    // Read file
     const buffer = fs.readFileSync(imagePath);
 
-    // Return image
     return new Response(buffer, {
       status: 200,
       headers: {
