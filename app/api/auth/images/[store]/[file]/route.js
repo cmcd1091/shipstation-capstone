@@ -17,7 +17,14 @@ export async function GET(request, { params }) {
     const cleaned = parts[1].replace(/\D/g, ""); // keep only digits
     const baseSku = `${parts[0]}-${cleaned}.png`;
 
-    const imagePath = path.join(process.cwd(), "public", "sourcePNGs", baseSku);
+    const imagePath = path.join(
+      process.cwd(),
+      "public",
+      "sourcePNGs",
+      baseSku
+    );
+    console.log("IMAGE PATH LOOKUP:", imagePath);
+
 
     if (!fs.existsSync(imagePath)) {
       console.error(`❌ PNG not found for base SKU "${baseSku}" at ${imagePath}`);
