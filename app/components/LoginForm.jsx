@@ -1,5 +1,7 @@
 "use client";
 
+console.log("API BASE =", process.env.NEXT_PUBLIC_API_URL);
+
 import { useState } from "react";
 import axios from "axios";
 import { useAppContext } from "../context/AppContext";
