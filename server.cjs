@@ -30,14 +30,18 @@ app.use(
 
 app.use(express.json());
 
-// ---------- STATIC FILES (PNG output folder) ----------
-// LOCAL-ONLY path — this will NOT exist on Render
-const targetBaseFolder = "/Users/cmm1158/Desktop/FilesToPrint";
+// ---------- STATIC FILES ----------
+const targetBaseFolder = path.join(__dirname, "FilesToPrint");
 
-// This only works locally. On Render it won’t break anything.
-if (fs.existsSync(targetBaseFolder)) {
-  app.use("/images", express.static(targetBaseFolder));
+// Ensure the writeable folder exists on Render
+if (!fs.existsSync(targetBaseFolder)) {
+  fs.mkdirSync(targetBaseFolder, { recursive: true });
+  console.log("Created base folder:", targetBaseFolder);
 }
+
+// Serve copied PNGs from this internal folder
+app.use("/images", express.static(targetBaseFolder));
+
 
 // ---------- ENV VARS ----------
 const {
@@ -146,8 +150,8 @@ app.post("/api/auth/login", async (req, res) => {
 // ---------- FILE COPY HELPER ----------
 const copyPng = (sku, orderNumber, store, copyIndex = 1) => {
   const cleanSku = String(sku).trim();
-  const baseSku = cleanSku.slice(0, 6);
 
+  const baseSku = cleanSku.slice(0, 6);
   const suffix = copyIndex > 1 ? `-${copyIndex}` : "";
   const pngCopyName = `${cleanSku}-${orderNumber}${suffix}.png`;
 
@@ -157,30 +161,34 @@ const copyPng = (sku, orderNumber, store, copyIndex = 1) => {
   const sourcePngPath = path.join(sourceFolder, `${baseSku}.png`);
   const targetPngPath = path.join(targetStoreFolder, pngCopyName);
 
+  // Validate PNG exists
   if (!fs.existsSync(sourcePngPath)) {
-    console.error("PNG not found:", baseSku);
+    console.error(`PNG not found for base SKU "${baseSku}" at ${sourcePngPath}`);
     return null;
   }
 
+  // Ensure store subfolder exists
   if (!fs.existsSync(targetStoreFolder)) {
     try {
       fs.mkdirSync(targetStoreFolder, { recursive: true });
-      console.log("Created:", targetStoreFolder);
+      console.log(`Created folder: ${targetStoreFolder}`);
     } catch (err) {
-      console.error("Cannot mkdir:", targetStoreFolder);
+      console.error("ERROR creating store folder:", err.message);
       return null;
     }
   }
 
+  // Copy the file
   try {
     fs.copyFileSync(sourcePngPath, targetPngPath);
   } catch (err) {
-    console.error("Copy error:", err.message);
+    console.error("ERROR copying PNG:", err.message);
     return null;
   }
 
   return { pngCopyName, baseSku };
 };
+
 
 // ---------- SHIPSTATION FETCH ----------
 const fetchTransfers = async (storeId, store, pageSize) => {
