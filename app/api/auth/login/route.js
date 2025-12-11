@@ -49,3 +49,7 @@ export async function POST(request) {
     );
   }
 }
+
+console.log("USER FOUND:", user);
+console.log("HASH IN DB:", user.passwordHash);
+
