@@ -64,23 +64,24 @@ export default function TransferResults({ message, files, skipped, selectedStore
       )}
 
       {/* ✅ ZIP DOWNLOAD BUTTON */}
-      {selectedStore && (
-        <a
-          href={`/api/auth/download-zip?store=${selectedStore}`}
-          style={{
-            display: "inline-block",
-            marginTop: "1.5rem",
-            padding: "0.6rem 1rem",
-            background: "#0070f3",
-            color: "white",
-            borderRadius: "6px",
-            textDecoration: "none",
-            fontWeight: "bold",
-          }}
-        >
-          Download ZIP
-        </a>
-      )}
+      {selectedStore && token && (
+  <a
+    href={`/api/auth/download-zip?store=${selectedStore}&token=${token}`}
+    style={{
+      display: "inline-block",
+      marginTop: "1.5rem",
+      padding: "0.6rem 1rem",
+      background: "#0070f3",
+      color: "white",
+      borderRadius: "6px",
+      textDecoration: "none",
+      fontWeight: "bold",
+    }}
+  >
+    Download ZIP
+  </a>
+)}
+
     </div>
   );
 }
