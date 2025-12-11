@@ -1,6 +1,6 @@
 "use client";
 
-const TransferResults = ({ message, files, skipped, downloadUrl }) => {
+const TransferResults = ({ message, files, skipped, selectedStore }) => {
   return (
     <div style={{ marginTop: "2rem" }}>
       {message && <p><strong>{message}</strong></p>}
@@ -8,11 +8,27 @@ const TransferResults = ({ message, files, skipped, downloadUrl }) => {
       {files.length > 0 && (
         <div>
           <h3>Copied Files</h3>
-          <ul>
+
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: "1rem",
+            marginTop: "1rem"
+          }}>
             {files.map((f) => (
-              <li key={f}>{f}</li>
+              <div key={f} style={{ textAlign: "center" }}>
+                
+                {/* THIS IS THE FIX — use your API route */}
+                <img
+                  src={`/api/auth/images/${selectedStore}/${f}`}
+                  alt={f}
+                  style={{ width: "180px", border: "1px solid #ccc" }}
+                />
+
+                <p>{f}</p>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
 
@@ -25,24 +41,6 @@ const TransferResults = ({ message, files, skipped, downloadUrl }) => {
             ))}
           </ul>
         </div>
-      )}
-
-      {downloadUrl && (
-        <a
-          href={downloadUrl}
-          style={{
-            display: "inline-block",
-            marginTop: "1rem",
-            padding: "0.6rem 1rem",
-            background: "#0070f3",
-            color: "white",
-            borderRadius: "6px",
-            textDecoration: "none",
-          }}
-          download
-        >
-          Download ZIP
-        </a>
       )}
     </div>
   );

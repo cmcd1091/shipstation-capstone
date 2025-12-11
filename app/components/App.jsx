@@ -1,27 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useAppContext } from "../context/AppContext";
 import FetchParams from "./FetchParams";
-import CopiedContainer from "./CopiedContainer";
-import TransfersAdmin from "./TransfersAdmin";
+import TransferResults from "./TransferResults";
 
-const App = () => {
-  const { token } = useAppContext();
-
-  // All required state hooks
-  const [pageSize, setPageSize] = useState(10);
+export default function App() {
   const [selectedStore, setSelectedStore] = useState("");
-  const [message, setMessage] = useState("");
   const [files, setFiles] = useState([]);
   const [skipped, setSkipped] = useState([]);
+  const [message, setMessage] = useState("");
+  const [pageSize, setPageSize] = useState(10);
 
   return (
-    <div style={{ padding: "1rem" }}>
-      <h1>ShipStation Transfer Utility</h1>
-
-      {!token && <p style={{ color: "red" }}>Please log in to access admin features.</p>}
-
+    <div>
       <FetchParams
         pageSize={pageSize}
         setPageSize={setPageSize}
@@ -31,16 +22,12 @@ const App = () => {
         setSkipped={setSkipped}
       />
 
-      <CopiedContainer files={files} selectedStore={selectedStore} />
-
-      {token && (
-        <>
-          <h2>Admin</h2>
-          <TransfersAdmin />
-        </>
-      )}
+      <TransferResults
+        message={message}
+        files={files}
+        skipped={skipped}
+        selectedStore={selectedStore}   /* ← IMPORTANT */
+      />
     </div>
   );
-};
-
-export default App;
+}
