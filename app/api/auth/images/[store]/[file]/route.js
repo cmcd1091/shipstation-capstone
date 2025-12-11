@@ -2,39 +2,56 @@ import { NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import fs from "fs";
 import path from "path";
+import jwt from "jsonwebtoken";
 
 export async function GET(request, { params }) {
   try {
-    // --- AUTH FIX: accept ?token= in URL ---
+    // --------------------------
+    // ACCEPT TOKEN FROM QUERY
+    // --------------------------
     const { searchParams } = new URL(request.url);
-    const token =
-      request.headers.get("authorization")?.replace("Bearer ", "") ||
-      searchParams.get("token");
+    const token = searchParams.get("token");
 
-    const user = token
-      ? getUserFromRequest({ headers: { authorization: `Bearer ${token}` } })
-      : null;
+    let user = null;
+
+    if (token) {
+      try {
+        user = jwt.verify(token, process.env.JWT_SECRET);
+      } catch (err) {
+        console.error("❌ Invalid token:", err.message);
+      }
+    } else {
+      // fallback to standard header auth
+      user = getUserFromRequest(request);
+    }
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // --------------------------
+    // Extract filename & SKU
+    // --------------------------
     const { file } = params;
 
-    // Extract base SKU
     const parts = file.split("-");
-    const rawSku = parts[1]; // "607N", "637HG", etc.
+    const rawSku = parts[1];
     const digits = rawSku.replace(/\D/g, "").slice(0, 3);
     const baseSku = `${parts[0]}-${digits}.png`;
 
-    const imagePath = path.join(process.cwd(), "public", "sourcePNGs", baseSku);
+    const imagePath = path.join(
+      process.cwd(),
+      "public",
+      "sourcePNGs",
+      baseSku
+    );
 
-    console.log("🧩 file:", file);
-    console.log("🧩 computed baseSku:", baseSku);
-    console.log("🧩 checking path:", imagePath);
+    console.log("🖼 FILE:", file);
+    console.log("🖼 Base SKU:", baseSku);
+    console.log("🖼 Path:", imagePath);
 
     if (!fs.existsSync(imagePath)) {
-      console.error(`❌ PNG not found: ${imagePath}`);
+      console.error("❌ Image missing:", imagePath);
       return NextResponse.json({ error: "Image not found" }, { status: 404 });
     }
 
