@@ -24,7 +24,7 @@ const FetchParams = ({
     setSelectedStore(store);
 
     try {
-      const res = await axios.get("/api/fetch-transfers", {
+      const res = await axios.get("/api/auth/fetch-transfers", {
         params: { store, pageSize },
       });
 

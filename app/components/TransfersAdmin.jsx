@@ -14,7 +14,7 @@ const TransfersAdmin = () => {
 
     setLoading(true);
     try {
-      const res = await axios.get("/api/transfers", {
+      const res = await axios.get("/api/auth/transfers", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
