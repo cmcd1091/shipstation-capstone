@@ -5,25 +5,19 @@ import path from "path";
 
 export async function GET(request, { params }) {
   try {
-    // --- AUTH ---
     const user = getUserFromRequest(request);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { store, file } = params;
+    const { file } = params;
 
-    // --- Extract base SKU from ShipStation filenames ---
-    // Example: "CN-613HG-M-CN-3827.png" → "CN-613.png"
-    const baseSku = file.split(/[-_]/)[0] + ".png";
+    // Extract correct base SKU: "CN-613HG-M-CN-3827.png" → "CN-613.png"
+    const parts = file.split(/[-_]/);
+    const cleaned = parts[1].replace(/\D/g, ""); // keep only digits
+    const baseSku = `${parts[0]}-${cleaned}.png`;
 
-    // Build absolute path to public/sourcePNGs
-    const imagePath = path.join(
-      process.cwd(),
-      "public",
-      "sourcePNGs",
-      baseSku
-    );
+    const imagePath = path.join(process.cwd(), "public", "sourcePNGs", baseSku);
 
     if (!fs.existsSync(imagePath)) {
       console.error(`❌ PNG not found for base SKU "${baseSku}" at ${imagePath}`);
