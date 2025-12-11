@@ -221,11 +221,5 @@ app.get("/download/:store.zip", (req, res) => {
   archive.finalize();
 });
 
-// ---------- SPA FALLBACK ----------
-const distPath = path.join(__dirname, "dist");
-app.use(express.static(distPath));
-app.get("*", (_, res) => res.sendFile(path.join(distPath, "index.html")));
-
-// ---------- START ----------
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
