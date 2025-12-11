@@ -1,34 +1,15 @@
 import { NextResponse } from "next/server";
-import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import { connectDB } from "@/lib/db";
+import User from "@/models/User";
 
-const MONGODB_URI = process.env.MONGODB_URI;
+export const dynamic = "force-dynamic";
 
-let User;
-
-async function initMongo() {
-  if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(MONGODB_URI);
-  }
-
-  if (!mongoose.models.User) {
-    User = mongoose.model(
-      "User",
-      new mongoose.Schema({
-        email: { type: String, required: true, unique: true },
-        passwordHash: { type: String, required: true },
-      })
-    );
-  } else {
-    User = mongoose.models.User;
-  }
-}
-
-export async function POST(req) {
+export async function POST(request) {
   try {
-    await initMongo();
+    await connectDB();
+    const { email, password } = await request.json();
 
-    const { email, password } = await req.json();
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password required" },
@@ -48,13 +29,13 @@ export async function POST(req) {
     const user = await User.create({ email, passwordHash });
 
     return NextResponse.json(
-      { id: user._id, email: user.email },
+      { id: user._id.toString(), email: user.email },
       { status: 201 }
     );
   } catch (err) {
-    console.error("Registration error:", err);
+    console.error("Error registering user:", err);
     return NextResponse.json(
-      { error: "Server error", detail: err.message },
+      { error: "Error registering user" },
       { status: 500 }
     );
   }

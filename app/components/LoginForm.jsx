@@ -1,7 +1,5 @@
 "use client";
 
-console.log("API BASE =", process.env.NEXT_PUBLIC_API_URL);
-
 import { useState } from "react";
 import axios from "axios";
 import { useAppContext } from "../context/AppContext";
@@ -11,14 +9,12 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const API_BASE = "https://shipstation-capstone.onrender.com";
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
-      const res = await axios.post(`${API_BASE}/api/auth/login`, {
+      const res = await axios.post("/api/auth/login", {
         email: userEmail,
         password,
       });

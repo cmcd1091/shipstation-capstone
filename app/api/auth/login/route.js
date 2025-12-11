@@ -1,37 +1,16 @@
 import { NextResponse } from "next/server";
-import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { connectDB } from "@/lib/db";
+import User from "@/models/User";
 
-const MONGODB_URI = process.env.MONGODB_URI;
-const JWT_SECRET = process.env.JWT_SECRET;
+export const dynamic = "force-dynamic";
 
-let User;
-
-// Ensure mongoose connection + model initialization
-async function initMongo() {
-  if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(MONGODB_URI);
-  }
-
-  if (!mongoose.models.User) {
-    User = mongoose.model(
-      "User",
-      new mongoose.Schema({
-        email: { type: String, required: true, unique: true },
-        passwordHash: { type: String, required: true },
-      })
-    );
-  } else {
-    User = mongoose.models.User;
-  }
-}
-
-export async function POST(req) {
+export async function POST(request) {
   try {
-    await initMongo();
+    await connectDB();
+    const { email, password } = await request.json();
 
-    const { email, password } = await req.json();
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password required" },
@@ -57,15 +36,15 @@ export async function POST(req) {
 
     const token = jwt.sign(
       { id: user._id.toString(), email: user.email },
-      JWT_SECRET,
+      process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
     return NextResponse.json({ token, email: user.email });
   } catch (err) {
-    console.error("Login error:", err);
+    console.error("Error logging in:", err);
     return NextResponse.json(
-      { error: "Server error", detail: err.message },
+      { error: "Error logging in" },
       { status: 500 }
     );
   }

@@ -6,23 +6,15 @@ import { useAppContext } from "../context/AppContext";
 
 const TransfersAdmin = () => {
   const { token } = useAppContext();
-
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL;
-
   const [transfers, setTransfers] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const fetchTransfers = async () => {
     if (!token) return;
 
-    if (!API_BASE) {
-      console.error("❌ Missing NEXT_PUBLIC_API_URL");
-      return;
-    }
-
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE}/api/transfers`, {
+      const res = await axios.get("/api/transfers", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -42,11 +34,9 @@ const TransfersAdmin = () => {
   return (
     <div style={{ margin: "1rem auto", maxWidth: "600px", textAlign: "center" }}>
       <h2>Transfer History</h2>
-
       <button onClick={fetchTransfers} disabled={loading}>
         {loading ? "Loading..." : "Refresh"}
       </button>
-
       {transfers.length === 0 ? (
         <p>No transfer history found.</p>
       ) : (

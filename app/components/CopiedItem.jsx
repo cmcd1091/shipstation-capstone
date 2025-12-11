@@ -1,24 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
-
 const CopiedItem = ({ file, selectedStore }) => {
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL;
-
-  const { skuPart, orderPart } = useMemo(() => {
-    const fileWithoutExt = file.replace(".png", "");
-    const splitIndex = fileWithoutExt.lastIndexOf("-CN-");
-
-    return {
-      skuPart: fileWithoutExt.slice(0, splitIndex),
-      orderPart: fileWithoutExt.slice(splitIndex + 1),
-    };
-  }, [file]);
+  const { skuPart, orderPart } = parseFileName(file);
 
   return (
     <li style={{ margin: "1rem" }}>
       <img
-        src={`${API_BASE}/images/${selectedStore}/${file}`}
+        src={`/api/images/${selectedStore}/${file}`}
         alt={file}
         style={{
           width: "100px",
@@ -26,8 +14,18 @@ const CopiedItem = ({ file, selectedStore }) => {
         }}
       />
       <div>Order: {orderPart}</div>
+      {/* <div>SKU: {skuPart}</div> */}
     </li>
   );
 };
+
+function parseFileName(file) {
+  const fileWithoutExt = file.replace(".png", "");
+  const splitIndex = fileWithoutExt.lastIndexOf("-CN-");
+  const skuPart = splitIndex !== -1 ? fileWithoutExt.slice(0, splitIndex) : "";
+  const orderPart =
+    splitIndex !== -1 ? fileWithoutExt.slice(splitIndex + 1) : fileWithoutExt;
+  return { skuPart, orderPart };
+}
 
 export default CopiedItem;
