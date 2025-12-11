@@ -3,16 +3,16 @@ import { getUserFromRequest } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Transfer from "@/models/Transfer";
 
-export async function GET() {
+export async function GET(request) {
   try {
     // --- AUTH CHECK ---
-    const session = await auth(request);
-    if (!session) {
-      return new NextResponse("Unauthorized", { status: 401 });
+    const user = getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // --- DB CONNECTION ---
-    await dbConnect();
+    await connectDB();
 
     // --- QUERY TRANSFERS ---
     const transfers = await Transfer.find({})
@@ -22,12 +22,12 @@ export async function GET() {
     return NextResponse.json({ success: true, transfers });
   } catch (err) {
     console.error("Error fetching transfers:", err);
-    return new NextResponse(
-      JSON.stringify({
+    return NextResponse.json(
+      {
         success: false,
         message: "Failed to fetch transfers",
         error: err.message,
-      }),
+      },
       { status: 500 }
     );
   }
@@ -35,30 +35,30 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    // --- AUTH ---
-    const session = await auth(request);
-    if (!session) {
-      return new NextResponse("Unauthorized", { status: 401 });
+    // --- AUTH CHECK ---
+    const user = getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // --- DB ---
-    await dbConnect();
+    // --- DB CONNECTION ---
+    await connectDB();
 
     // --- BODY ---
     const body = await request.json();
 
-    // Insert into Mongo
+    // Create new transfer
     const newTransfer = await Transfer.create(body);
 
     return NextResponse.json({ success: true, transfer: newTransfer });
   } catch (err) {
     console.error("Error saving transfer:", err);
-    return new NextResponse(
-      JSON.stringify({
+    return NextResponse.json(
+      {
         success: false,
         message: "Failed to save transfer",
         error: err.message,
-      }),
+      },
       { status: 500 }
     );
   }
