@@ -5,61 +5,38 @@ import Transfer from "@/models/Transfer";
 
 export async function GET(request) {
   try {
-    // --- AUTH CHECK ---
+    await connectDB();
+
+    // AUTH
     const user = getUserFromRequest(request);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // --- DB CONNECTION ---
-    await connectDB();
+    const transfers = await Transfer.find({}).sort({ createdAt: -1 }).lean();
 
-    // --- QUERY TRANSFERS ---
-    const transfers = await Transfer.find({})
-      .sort({ createdAt: -1 })
-      .lean();
-
-    return NextResponse.json({ success: true, transfers });
+    return NextResponse.json(transfers);
   } catch (err) {
     console.error("Error fetching transfers:", err);
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Failed to fetch transfers",
-        error: err.message,
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
 export async function POST(request) {
   try {
-    // --- AUTH CHECK ---
+    await connectDB();
+
     const user = getUserFromRequest(request);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // --- DB CONNECTION ---
-    await connectDB();
-
-    // --- BODY ---
     const body = await request.json();
+    const created = await Transfer.create(body);
 
-    // Create new transfer
-    const newTransfer = await Transfer.create(body);
-
-    return NextResponse.json({ success: true, transfer: newTransfer });
+    return NextResponse.json(created);
   } catch (err) {
     console.error("Error saving transfer:", err);
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Failed to save transfer",
-        error: err.message,
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
