@@ -33,3 +33,8 @@ export async function POST(request) {
     return NextResponse.json({ error: "Error logging in" }, { status: 500 });
   }
 }
+
+console.log("🔍 Incoming login:", email, password);
+console.log("🔍 Looking for user in DB...");
+const user = await User.findOne({ email });
+console.log("🔍 User found:", user);
