@@ -1,6 +1,10 @@
 "use client";
 
+import { useAppContext } from "../context/AppContext";
+
 export default function TransferResults({ message, files, skipped, selectedStore }) {
+  const { token } = useAppContext();
+
   return (
     <div style={{ marginTop: "2rem" }}>
       {message && <p><strong>{message}</strong></p>}
@@ -10,7 +14,8 @@ export default function TransferResults({ message, files, skipped, selectedStore
           <h3>Copied Files</h3>
           <ul style={{ listStyle: "none", padding: 0 }}>
             {files.map((file) => {
-              const url = `/api/auth/images/${selectedStore}/${file}`;
+              const url = `/api/auth/images/${selectedStore}/${file}?token=${token}`;
+
               return (
                 <li
                   key={file}

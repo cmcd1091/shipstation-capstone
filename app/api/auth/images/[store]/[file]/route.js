@@ -5,19 +5,27 @@ import path from "path";
 
 export async function GET(request, { params }) {
   try {
-    const user = getUserFromRequest(request);
+    // --- AUTH FIX: accept ?token= in URL ---
+    const { searchParams } = new URL(request.url);
+    const token =
+      request.headers.get("authorization")?.replace("Bearer ", "") ||
+      searchParams.get("token");
+
+    const user = token
+      ? getUserFromRequest({ headers: { authorization: `Bearer ${token}` } })
+      : null;
+
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { file } = params;
 
-    // EXTRACT BASE SKU CORRECTLY
-    // Example: CN-607N-L-CN-3836.png → CN-607.png
+    // Extract base SKU
     const parts = file.split("-");
-    const rawSku = parts[1];          // e.g. "607N" or "637HG"
-    const digits = rawSku.replace(/\D/g, "").slice(0, 3); // "607", "637"
-    const baseSku = `${parts[0]}-${digits}.png`;          // CN-607.png
+    const rawSku = parts[1]; // "607N", "637HG", etc.
+    const digits = rawSku.replace(/\D/g, "").slice(0, 3);
+    const baseSku = `${parts[0]}-${digits}.png`;
 
     const imagePath = path.join(process.cwd(), "public", "sourcePNGs", baseSku);
 
