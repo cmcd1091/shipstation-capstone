@@ -352,7 +352,7 @@ app.delete("/api/transfers/:id", authMiddleware, async (req, res) => {
 
 // ---------- SPA FALLBACK ----------
 // This must come AFTER all API routes, so that /api/... still hit the handlers above.
-app.get("/*", (req, res) => {
+app.get(/.*/, (req, res) => {
   res.sendFile(path.join(distPath, "index.html"));
 });
 
