@@ -7,7 +7,7 @@ import { useAppContext } from "../context/AppContext";
 const TransfersAdmin = () => {
   const { token } = useAppContext();
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
   const [transfers, setTransfers] = useState([]);
   const [loading, setLoading] = useState(false);

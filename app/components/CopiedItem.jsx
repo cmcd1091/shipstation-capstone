@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 
 const CopiedItem = ({ file, selectedStore }) => {
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
   const { skuPart, orderPart } = useMemo(() => {
     const fileWithoutExt = file.replace(".png", "");
