@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import dbConnect from "@/lib/db";
+import { connectDB } from "@/lib/db";
 import Transfer from "@/models/Transfer";
 
 export async function GET() {
