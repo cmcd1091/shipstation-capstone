@@ -5,6 +5,7 @@ import path from "path";
 
 export async function GET(request, { params }) {
   try {
+    // --- AUTH ---
     const user = getUserFromRequest(request);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -12,21 +13,35 @@ export async function GET(request, { params }) {
 
     const { file } = params;
 
-    // Extract base SKU: CN-506HG-M-CN-3827.png → CN-506.png
-    const match = file.match(/^[A-Za-z]+-\d+/);
-    const baseSku = match ? match[0] + ".png" : file;
+    // ---------------------------
+    // Extract base SKU correctly
+    // Example: CN-607N-L-CN-3836.png
+    // parts = ["CN", "607N", "L", "CN", "3836.png"]
+    // baseSku = "CN-607N.png"
+    // ---------------------------
+    const parts = file.split("-");
+    const baseSku = `${parts[0]}-${parts[1]}.png`;
 
-    const imagePath = path.join(process.cwd(), "public", "sourcePNGs", baseSku);
+    // Build absolute path
+    const imagePath = path.join(
+      process.cwd(),
+      "public",
+      "sourcePNGs",
+      baseSku
+    );
 
-    console.log("🔎 Checking:", imagePath);
+    console.log("📁 Looking for image:", imagePath);
 
+    // Check file exists
     if (!fs.existsSync(imagePath)) {
-      console.error(`❌ PNG not found for base SKU "${baseSku}" at ${imagePath}`);
+      console.error(`❌ PNG not found: ${imagePath}`);
       return NextResponse.json({ error: "Image not found" }, { status: 404 });
     }
 
+    // Read file
     const buffer = fs.readFileSync(imagePath);
 
+    // Return image
     return new Response(buffer, {
       status: 200,
       headers: {
