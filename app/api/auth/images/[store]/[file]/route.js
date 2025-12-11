@@ -12,22 +12,16 @@ export async function GET(request, { params }) {
 
     const { file } = params;
 
-    // Extract correct base SKU: "CN-613HG-M-CN-3827.png" → "CN-613.png"
-    const parts = file.split(/[-_]/);
-    const cleaned = parts[1].replace(/\D/g, ""); // keep only digits
-    const baseSku = `${parts[0]}-${cleaned}.png`;
+    // extract base SKU — CN-613HG-M-CN-3827.png → CN-613.png
+    const baseSku = file.split(/[-_]/)[0] + ".png";
 
-    const imagePath = path.join(
-      process.cwd(),
-      "public",
-      "sourcePNGs",
-      baseSku
-    );
-    console.log("IMAGE PATH LOOKUP:", imagePath);
+    // FIXED PATH — MUST include "public"
+    const imagePath = path.join(process.cwd(), "public", "sourcePNGs", baseSku);
 
+    console.log("🔎 Checking image path:", imagePath);
 
     if (!fs.existsSync(imagePath)) {
-      console.error(`❌ PNG not found for base SKU "${baseSku}" at ${imagePath}`);
+      console.error(`❌ PNG not found at ${imagePath}`);
       return NextResponse.json({ error: "Image not found" }, { status: 404 });
     }
 
