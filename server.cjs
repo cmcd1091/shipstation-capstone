@@ -22,10 +22,15 @@ app.use(
 app.use(express.json()); // for JSON bodies
 
 // ---------- STATIC FILES ----------
-// NOTE: This path is your local machine path; on Render this folder
-// will not exist unless you change it to something in the repo or a volume.
-const targetBaseFolder = "/Users/cmm1158/Desktop/FilesToPrint";
+const targetBaseFolder = path.join(__dirname, "FilesToPrint");
+
+// Ensure base directory exists
+if (!fs.existsSync(targetBaseFolder)) {
+  fs.mkdirSync(targetBaseFolder, { recursive: true });
+}
+
 app.use("/images", express.static(targetBaseFolder));
+
 
 // Serve the Vite-built frontend (dist folder at project root)
 const distPath = path.join(__dirname, "dist");
@@ -365,18 +370,18 @@ app.listen(PORT, () =>
 // ---------- FILE COPY HELPER ----------
 const copyPng = (sku, orderNumber, store, copyIndex = 1) => {
   const cleanSku = String(sku).trim();
-
   const baseSku = cleanSku.slice(0, 6);
 
   const suffix = copyIndex > 1 ? `-${copyIndex}` : "";
   const pngCopyName = `${cleanSku}-${orderNumber}${suffix}.png`;
 
   const sourceFolder = path.join(__dirname, "sourcePNGs");
-  const targetStoreFolder = path.join(targetBaseFolder, store);
-
   const sourcePngPath = path.join(sourceFolder, `${baseSku}.png`);
+
+  const targetStoreFolder = path.join(targetBaseFolder, store);
   const targetPngPath = path.join(targetStoreFolder, pngCopyName);
 
+  // Validate source file
   if (!fs.existsSync(sourcePngPath)) {
     console.error(
       `PNG not found for base SKU "${baseSku}" (full sku "${cleanSku}"): ${sourcePngPath}`
@@ -384,11 +389,13 @@ const copyPng = (sku, orderNumber, store, copyIndex = 1) => {
     return null;
   }
 
+  // Ensure target store folder exists
   if (!fs.existsSync(targetStoreFolder)) {
     fs.mkdirSync(targetStoreFolder, { recursive: true });
-    console.log(`Created target folder: ${targetStoreFolder}`);
+    console.log(`Created store folder: ${targetStoreFolder}`);
   }
 
+  // Copy PNG into FilesToPrint/<store>/
   fs.copyFileSync(sourcePngPath, targetPngPath);
 
   return { pngCopyName, baseSku };
