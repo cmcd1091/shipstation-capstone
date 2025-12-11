@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 export async function POST(request) {
   try {
     await connectDB();
+
     const { email, password } = await request.json();
 
     if (!email || !password) {
@@ -19,6 +20,7 @@ export async function POST(request) {
     }
 
     const user = await User.findOne({ email });
+
     if (!user) {
       return NextResponse.json(
         { error: "Invalid credentials" },
@@ -27,6 +29,7 @@ export async function POST(request) {
     }
 
     const ok = await bcrypt.compare(password, user.passwordHash);
+
     if (!ok) {
       return NextResponse.json(
         { error: "Invalid credentials" },
@@ -42,14 +45,10 @@ export async function POST(request) {
 
     return NextResponse.json({ token, email: user.email });
   } catch (err) {
-    console.error("Error logging in:", err);
+    console.error("Error logging in:", err.message);
     return NextResponse.json(
       { error: "Error logging in" },
       { status: 500 }
     );
   }
 }
-
-console.log("USER FOUND:", user);
-console.log("HASH IN DB:", user.passwordHash);
-
