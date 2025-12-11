@@ -13,7 +13,7 @@ const FetchParams = ({
 }) => {
   const [localStore, setLocalStore] = useState("coed");
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+  const API_BASE = "https://shipstation-capstone.onrender.com";
 
   const fetchTransfers = async (store) => {
     if (!store) {

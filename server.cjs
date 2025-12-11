@@ -9,6 +9,15 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
+// ---------- NEXT.JS ----------
+const next = require("next");
+const nextApp = next({
+  dev: false,          // Render = production
+  dir: "./"            // Next.js project root
+});
+const handle = nextApp.getRequestHandler();
+
+// ---------- EXPRESS ----------
 const app = express();
 
 // ---------- MIDDLEWARE ----------
@@ -19,62 +28,49 @@ app.use(
   })
 );
 
-app.use(express.json()); // for JSON bodies
+app.use(express.json());
 
-// ---------- STATIC FILES ----------
-const targetBaseFolder = path.join(__dirname, "FilesToPrint");
+// ---------- STATIC FILES (PNG output folder) ----------
+// LOCAL-ONLY path — this will NOT exist on Render
+const targetBaseFolder = "/Users/cmm1158/Desktop/FilesToPrint";
 
-// Ensure base directory exists
-if (!fs.existsSync(targetBaseFolder)) {
-  fs.mkdirSync(targetBaseFolder, { recursive: true });
+// This only works locally. On Render it won’t break anything.
+if (fs.existsSync(targetBaseFolder)) {
+  app.use("/images", express.static(targetBaseFolder));
 }
 
-app.use("/images", express.static(targetBaseFolder));
-
-
-// Serve the Vite-built frontend (dist folder at project root)
-const distPath = path.join(__dirname, "dist");
-app.use(express.static(distPath));
-
 // ---------- ENV VARS ----------
-const SHIPSTATION_API_KEY = process.env.SHIPSTATION_API_KEY;
-const SHIPSTATION_API_SECRET = process.env.SHIPSTATION_API_SECRET;
-const MONGODB_URI = process.env.MONGODB_URI;
-const JWT_SECRET = process.env.JWT_SECRET;
+const {
+  SHIPSTATION_API_KEY,
+  SHIPSTATION_API_SECRET,
+  MONGODB_URI,
+  JWT_SECRET,
+} = process.env;
 
-console.log(
-  "KEY present?",
-  !!SHIPSTATION_API_KEY,
-  "SECRET present?",
-  !!SHIPSTATION_API_SECRET
-);
+console.log("KEY present?", !!SHIPSTATION_API_KEY, "SECRET present?", !!SHIPSTATION_API_SECRET);
 console.log("MONGODB_URI present?", !!MONGODB_URI);
 console.log("JWT_SECRET present?", !!JWT_SECRET);
 
-// ---------- MONGOOSE SETUP ----------
+// ---------- MONGOOSE ----------
 if (MONGODB_URI) {
   mongoose
     .connect(MONGODB_URI)
-    .then(() => {
-      console.log("✅ Connected to MongoDB");
-    })
-    .catch((err) => {
-      console.error("❌ MongoDB connection error:", err.message);
-    });
+    .then(() => console.log("✅ Connected to MongoDB"))
+    .catch((err) => console.error("❌ MongoDB error:", err.message));
 } else {
-  console.warn("⚠️ No MONGODB_URI set; MongoDB features disabled.");
+  console.warn("⚠️ No MONGODB_URI provided");
 }
 
-// ---------- SCHEMAS / MODELS ----------
+// ---------- SCHEMAS ----------
 const transferSchema = new mongoose.Schema(
   {
-    store: { type: String, required: true },
-    orderNumber: { type: String, required: true },
-    sku: { type: String, required: true },
-    baseSku: { type: String, required: true },
-    quantityIndex: { type: Number, default: 1 },
-    fileName: { type: String, required: true },
-    skipped: { type: Boolean, default: false },
+    store: String,
+    orderNumber: String,
+    sku: String,
+    baseSku: String,
+    quantityIndex: Number,
+    fileName: String,
+    skipped: Boolean,
   },
   { timestamps: true }
 );
@@ -84,7 +80,7 @@ const Transfer = mongoose.model("Transfer", transferSchema);
 const userSchema = new mongoose.Schema(
   {
     email: { type: String, required: true, unique: true },
-    passwordHash: { type: String, required: true },
+    passwordHash: String,
   },
   { timestamps: true }
 );
@@ -93,90 +89,107 @@ const User = mongoose.model("User", userSchema);
 
 // ---------- AUTH MIDDLEWARE ----------
 const authMiddleware = (req, res, next) => {
-  const authHeader = req.headers.authorization || "";
-  const token = authHeader.startsWith("Bearer ")
-    ? authHeader.slice(7)
-    : null;
+  const token =
+    req.headers.authorization?.startsWith("Bearer ")
+      ? req.headers.authorization.slice(7)
+      : null;
 
-  if (!token) {
-    return res.status(401).json({ error: "No token provided" });
-  }
+  if (!token) return res.status(401).json({ error: "No token" });
 
   try {
-    const payload = jwt.verify(token, JWT_SECRET);
-    req.user = { id: payload.id, email: payload.email };
+    req.user = jwt.verify(token, JWT_SECRET);
     next();
   } catch (err) {
-    console.error("JWT verify error:", err.message);
-    return res.status(401).json({ error: "Invalid or expired token" });
+    return res.status(401).json({ error: "Invalid token" });
   }
 };
 
 // ---------- AUTH ROUTES ----------
-// Register: used once to create an initial user (use curl/Postman)
 app.post("/api/auth/register", async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password required" });
-    }
 
     const existing = await User.findOne({ email });
-    if (existing) {
-      return res.status(400).json({ error: "User already exists" });
-    }
+    if (existing) return res.status(400).json({ error: "User exists" });
 
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await User.create({ email, passwordHash });
 
-    res.status(201).json({ id: user._id, email: user.email });
+    res.status(201).json({ id: user._id, email });
   } catch (err) {
-    console.error("Error registering user:", err.message);
-    res.status(500).json({ error: "Error registering user" });
+    res.status(500).json({ error: "Registration error" });
   }
 });
 
-// Login: returns JWT
 app.post("/api/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password required" });
-    }
 
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
+    if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
     const ok = await bcrypt.compare(password, user.passwordHash);
-    if (!ok) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
+    if (!ok) return res.status(401).json({ error: "Invalid credentials" });
 
     const token = jwt.sign(
-      { id: user._id.toString(), email: user.email },
+      { id: user._id.toString(), email },
       JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    res.json({ token, email: user.email });
+    res.json({ token, email });
   } catch (err) {
-    console.error("Error logging in:", err.message);
-    res.status(500).json({ error: "Error logging in" });
+    res.status(500).json({ error: "Login error" });
   }
 });
 
-// ---------- CORE LOGIC: FETCH TRANSFERS FROM SHIPSTATION ----------
+// ---------- FILE COPY HELPER ----------
+const copyPng = (sku, orderNumber, store, copyIndex = 1) => {
+  const cleanSku = String(sku).trim();
+  const baseSku = cleanSku.slice(0, 6);
+
+  const suffix = copyIndex > 1 ? `-${copyIndex}` : "";
+  const pngCopyName = `${cleanSku}-${orderNumber}${suffix}.png`;
+
+  const sourceFolder = path.join(__dirname, "sourcePNGs");
+  const targetStoreFolder = path.join(targetBaseFolder, store);
+
+  const sourcePngPath = path.join(sourceFolder, `${baseSku}.png`);
+  const targetPngPath = path.join(targetStoreFolder, pngCopyName);
+
+  if (!fs.existsSync(sourcePngPath)) {
+    console.error("PNG not found:", baseSku);
+    return null;
+  }
+
+  if (!fs.existsSync(targetStoreFolder)) {
+    try {
+      fs.mkdirSync(targetStoreFolder, { recursive: true });
+      console.log("Created:", targetStoreFolder);
+    } catch (err) {
+      console.error("Cannot mkdir:", targetStoreFolder);
+      return null;
+    }
+  }
+
+  try {
+    fs.copyFileSync(sourcePngPath, targetPngPath);
+  } catch (err) {
+    console.error("Copy error:", err.message);
+    return null;
+  }
+
+  return { pngCopyName, baseSku };
+};
+
+// ---------- SHIPSTATION FETCH ----------
 const fetchTransfers = async (storeId, store, pageSize) => {
   const auth = Buffer.from(
     `${SHIPSTATION_API_KEY}:${SHIPSTATION_API_SECRET}`
   ).toString("base64");
 
   const response = await axios.get("https://ssapi.shipstation.com/orders", {
-    headers: {
-      Authorization: `Basic ${auth}`,
-    },
+    headers: { Authorization: `Basic ${auth}` },
     params: {
       orderStatus: "awaiting_shipment",
       storeid: storeId,
@@ -187,12 +200,12 @@ const fetchTransfers = async (storeId, store, pageSize) => {
   const orders = response.data.orders;
   const copiedFiles = [];
   const skippedOrders = [];
+
   const PRINTED_TAG = 111476;
 
   for (const order of orders) {
-    if (order.tagIds && order.tagIds.includes(PRINTED_TAG)) {
+    if (order.tagIds?.includes(PRINTED_TAG)) {
       skippedOrders.push(order.orderNumber);
-
       await Transfer.create({
         store,
         orderNumber: order.orderNumber,
@@ -202,7 +215,6 @@ const fetchTransfers = async (storeId, store, pageSize) => {
         fileName: "",
         skipped: true,
       });
-
       continue;
     }
 
@@ -211,7 +223,6 @@ const fetchTransfers = async (storeId, store, pageSize) => {
         const result = copyPng(item.sku, order.orderNumber, store, i);
         if (result) {
           const { pngCopyName, baseSku } = result;
-
           copiedFiles.push(pngCopyName);
 
           await Transfer.create({
@@ -231,13 +242,10 @@ const fetchTransfers = async (storeId, store, pageSize) => {
   return { copiedFiles, skippedOrders };
 };
 
-// ---------- ROUTE: FETCH & COPY TRANSFERS ----------
+// ---------- FETCH TRANSFERS ROUTE ----------
 app.get("/fetch-transfers", async (req, res) => {
   try {
-    const store = req.query.store;
-    const pageSize = req.query.pageSize
-      ? parseInt(req.query.pageSize, 10)
-      : 5;
+    const { store, pageSize = 5 } = req.query;
 
     const storeMap = {
       alcolo: 516232,
@@ -253,150 +261,38 @@ app.get("/fetch-transfers", async (req, res) => {
     };
 
     const storeId = storeMap[store];
+    if (!storeId) return res.status(400).json({ error: "Invalid store" });
 
-    if (!storeId) {
-      return res.status(400).json({ error: "Invalid or missing store parameter" });
-    }
-
-    const { copiedFiles, skippedOrders } = await fetchTransfers(
-      storeId,
-      store,
-      pageSize
-    );
-
-    let message = "";
-    if (copiedFiles.length > 0) {
-      message += ` ${copiedFiles.length} files copied successfully`;
-    } else {
-      message += ` No files were copied.`;
-    }
-
-    res.json({ message, files: copiedFiles, skippedOrders });
-  } catch (error) {
-    console.error("Error fetching transfers from ShipStation:");
-    console.error("Status:", error.response?.status);
-    console.error("Data:", error.response?.data);
-    console.error("Message:", error.message);
-
-    res
-      .status(500)
-      .send(error.response?.data || error.message || "Error fetching transfers");
-  }
-});
-
-// ---------- PROTECTED CRUD ROUTES FOR TRANSFERS ----------
-app.post("/api/transfers", authMiddleware, async (req, res) => {
-  try {
-    const transfer = await Transfer.create(req.body);
-    res.status(201).json(transfer);
+    const result = await fetchTransfers(storeId, store, Number(pageSize));
+    res.json(result);
   } catch (err) {
-    console.error("Error creating transfer:", err.message);
-    res.status(400).json({ error: err.message });
+    console.error("Fetch error:", err.message);
+    res.status(500).json({ error: "Error fetching transfers" });
   }
 });
 
+// ---------- TRANSFERS CRUD ----------
 app.get("/api/transfers", authMiddleware, async (req, res) => {
   try {
-    const filters = {};
-    if (req.query.store) filters.store = req.query.store;
-    if (req.query.skipped) filters.skipped = req.query.skipped === "true";
-
-    const transfers = await Transfer.find(filters)
+    const transfers = await Transfer.find({})
       .sort({ createdAt: -1 })
       .limit(200);
 
     res.json(transfers);
   } catch (err) {
-    console.error("Error fetching transfers from DB:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.get("/api/transfers/:id", authMiddleware, async (req, res) => {
-  try {
-    const transfer = await Transfer.findById(req.params.id);
-    if (!transfer) {
-      return res.status(404).json({ error: "Transfer not found" });
-    }
-    res.json(transfer);
-  } catch (err) {
-    console.error("Error fetching transfer:", err.message);
-    res.status(400).json({ error: err.message });
-  }
+// ---------- NEXT.JS FALLBACK (ALL NON-API ROUTES) ----------
+nextApp.prepare().then(() => {
+  app.all("*", (req, res) => {
+    return handle(req, res);
+  });
 });
 
-app.put("/api/transfers/:id", authMiddleware, async (req, res) => {
-  try {
-    const transfer = await Transfer.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-    if (!transfer) {
-      return res.status(404).json({ error: "Transfer not found" });
-    }
-    res.json(transfer);
-  } catch (err) {
-    console.error("Error updating transfer:", err.message);
-    res.status(400).json({ error: err.message });
-  }
-});
-
-app.delete("/api/transfers/:id", authMiddleware, async (req, res) => {
-  try {
-    const transfer = await Transfer.findByIdAndDelete(req.params.id);
-    if (!transfer) {
-      return res.status(404).json({ error: "Transfer not found" });
-    }
-    res.json({ message: "Transfer deleted" });
-  } catch (err) {
-    console.error("Error deleting transfer:", err.message);
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// ---------- SPA FALLBACK ----------
-// This must come AFTER all API routes, so that /api/... still hit the handlers above.
-app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(distPath, "index.html"));
-});
-
-// ---------- SERVER START ----------
+// ---------- START SERVER ----------
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () =>
   console.log(`🚀 Server running on port ${PORT}`)
 );
-
-// ---------- FILE COPY HELPER ----------
-const copyPng = (sku, orderNumber, store, copyIndex = 1) => {
-  const cleanSku = String(sku).trim();
-  const baseSku = cleanSku.slice(0, 6);
-
-  const suffix = copyIndex > 1 ? `-${copyIndex}` : "";
-  const pngCopyName = `${cleanSku}-${orderNumber}${suffix}.png`;
-
-  const sourceFolder = path.join(__dirname, "sourcePNGs");
-  const sourcePngPath = path.join(sourceFolder, `${baseSku}.png`);
-
-  const targetStoreFolder = path.join(targetBaseFolder, store);
-  const targetPngPath = path.join(targetStoreFolder, pngCopyName);
-
-  // Validate source file
-  if (!fs.existsSync(sourcePngPath)) {
-    console.error(
-      `PNG not found for base SKU "${baseSku}" (full sku "${cleanSku}"): ${sourcePngPath}`
-    );
-    return null;
-  }
-
-  // Ensure target store folder exists
-  if (!fs.existsSync(targetStoreFolder)) {
-    fs.mkdirSync(targetStoreFolder, { recursive: true });
-    console.log(`Created store folder: ${targetStoreFolder}`);
-  }
-
-  // Copy PNG into FilesToPrint/<store>/
-  fs.copyFileSync(sourcePngPath, targetPngPath);
-
-  return { pngCopyName, baseSku };
-};
