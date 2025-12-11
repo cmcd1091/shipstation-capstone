@@ -6,11 +6,9 @@ export async function GET(request, { params }) {
   try {
     const { file } = params;
 
-    // Extract base SKU (e.g., CN-607N-L-CN-3836.png → CN-607N.png)
     const parts = file.split("-");
     const baseSku = `${parts[0]}-${parts[1]}.png`;
 
-    // Path to public/sourcePNGs
     const imagePath = path.join(
       process.cwd(),
       "public",
@@ -18,7 +16,9 @@ export async function GET(request, { params }) {
       baseSku
     );
 
-    console.log("📁 Looking for image:", imagePath);
+    console.log("🧩 file:", file);
+    console.log("🧩 baseSku:", baseSku);
+    console.log("🧩 path:", imagePath);
 
     if (!fs.existsSync(imagePath)) {
       console.error(`❌ PNG not found: ${imagePath}`);
@@ -34,7 +34,6 @@ export async function GET(request, { params }) {
         "Cache-Control": "public, max-age=31536000",
       },
     });
-
   } catch (err) {
     console.error("Image route error:", err);
     return NextResponse.json(
