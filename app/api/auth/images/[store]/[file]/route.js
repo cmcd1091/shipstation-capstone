@@ -1,3 +1,5 @@
+console.log("🚨 IMAGE ROUTE LOADED");
+
 import { NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import fs from "fs";
