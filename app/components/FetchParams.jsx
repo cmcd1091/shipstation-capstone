@@ -1,7 +1,7 @@
 "use client";
 
-import axios from "axios";
 import { useState } from "react";
+import axios from "axios";
 
 const FetchParams = ({
   pageSize,
@@ -10,31 +10,28 @@ const FetchParams = ({
   setMessage,
   setFiles,
   setSkipped,
+  setDownloadUrl,
 }) => {
-  const [localStore, setLocalStore] = useState("coed");
+  const [store, setStore] = useState("coed");
+  const API = process.env.NEXT_PUBLIC_API_URL;
 
-  const API_BASE = "https://shipstation-capstone.onrender.com";
-
-  const fetchTransfers = async (store) => {
-    if (!store) {
-      setMessage("Please select a store before fetching.");
-      return;
-    }
-
+  const fetchTransfers = async () => {
     setFiles([]);
     setSkipped([]);
-    setSelectedStore(store);
+    setMessage("");
 
     try {
       const res = await axios.get(
-        `${API_BASE}/fetch-transfers?store=${store}&pageSize=${pageSize}`
+        `${API}/fetch-transfers?store=${store}&pageSize=${pageSize}`
       );
 
+      setSelectedStore(store);
       setMessage(res.data.message);
       setFiles(res.data.files);
       setSkipped(res.data.skippedOrders);
-    } catch (error) {
-      setMessage("Error: " + (error.response?.data || error.message));
+      setDownloadUrl(res.data.downloadUrl);
+    } catch (err) {
+      setMessage("Error fetching transfers");
     }
   };
 
@@ -43,8 +40,8 @@ const FetchParams = ({
       <label>
         Store:
         <select
-          value={localStore}
-          onChange={(e) => setLocalStore(e.target.value)}
+          value={store}
+          onChange={(e) => setStore(e.target.value)}
           style={{ marginLeft: "0.5rem" }}
         >
           <option value="coed">Coed Naked</option>
@@ -54,24 +51,18 @@ const FetchParams = ({
 
       <div style={{ marginTop: "0.5rem" }}>
         <label>
-          Number of orders:
+          Orders to fetch:
           <input
             type="number"
             value={pageSize}
             onChange={(e) => setPageSize(Number(e.target.value))}
-            style={{
-              padding: "0.3rem",
-              marginLeft: "0.5rem",
-            }}
+            style={{ marginLeft: "0.5rem" }}
           />
         </label>
       </div>
 
-      <button
-        onClick={() => fetchTransfers(localStore)}
-        style={{ marginTop: "0.75rem" }}
-      >
-        Fetch & Copy
+      <button onClick={fetchTransfers} style={{ marginTop: "0.75rem" }}>
+        Fetch Transfers
       </button>
     </div>
   );

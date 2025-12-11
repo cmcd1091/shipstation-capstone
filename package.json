@@ -7,6 +7,7 @@
     "start": "NODE_ENV=production node server.cjs"
   },
   "dependencies": {
+    "archiver": "^7.0.1",
     "axios": "^1.6.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
