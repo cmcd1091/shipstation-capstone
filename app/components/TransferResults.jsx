@@ -1,6 +1,6 @@
 "use client";
 
-const TransferResults = ({ message, files, skipped, selectedStore }) => {
+export default function TransferResults({ message, files, skipped, selectedStore }) {
   return (
     <div style={{ marginTop: "2rem" }}>
       {message && <p><strong>{message}</strong></p>}
@@ -8,27 +8,43 @@ const TransferResults = ({ message, files, skipped, selectedStore }) => {
       {files.length > 0 && (
         <div>
           <h3>Copied Files</h3>
+          <ul style={{ listStyle: "none", padding: 0 }}>
+            {files.map((file) => {
+              const url = `/api/auth/images/${selectedStore}/${file}`;
+              return (
+                <li
+                  key={file}
+                  style={{
+                    marginBottom: "1rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "1rem",
+                  }}
+                >
+                  {/* Thumbnail */}
+                  <img
+                    src={url}
+                    alt={file}
+                    style={{
+                      width: "80px",
+                      height: "80px",
+                      objectFit: "contain",
+                      border: "1px solid #ccc",
+                      padding: "4px",
+                      background: "white",
+                    }}
+                    onError={(e) => {
+                      e.target.style.opacity = 0.3;
+                      e.target.title = "Not Found";
+                    }}
+                  />
 
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "1rem",
-            marginTop: "1rem"
-          }}>
-            {files.map((f) => (
-              <div key={f} style={{ textAlign: "center" }}>
-                
-                {/* THIS IS THE FIX — use your API route */}
-                <img
-                  src={`/api/auth/images/${selectedStore}/${f}`}
-                  alt={f}
-                  style={{ width: "180px", border: "1px solid #ccc" }}
-                />
-
-                <p>{f}</p>
-              </div>
-            ))}
-          </div>
+                  {/* Filename */}
+                  <span>{file}</span>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       )}
 
@@ -44,6 +60,4 @@ const TransferResults = ({ message, files, skipped, selectedStore }) => {
       )}
     </div>
   );
-};
-
-export default TransferResults;
+}
