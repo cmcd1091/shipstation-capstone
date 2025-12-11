@@ -14,15 +14,9 @@ export default function TransferResults({ message, files, skipped, selectedStore
           <h3>Copied Files</h3>
           <ul style={{ listStyle: "none", padding: 0 }}>
             {files.map((file) => {
-              if (!selectedStore || !token) {
-                console.log("⛔ Missing selectedStore or token:", { selectedStore, token });
-                return null;
-              }
+              if (!selectedStore || !token) return null;
 
-              // THIS IS THE CORRECT URL
               const url = `/api/auth/images/${selectedStore}/${file}?token=${token}`;
-
-              console.log("🔗 Thumbnail URL:", url);
 
               return (
                 <li
@@ -67,6 +61,25 @@ export default function TransferResults({ message, files, skipped, selectedStore
             ))}
           </ul>
         </div>
+      )}
+
+      {/* ✅ ZIP DOWNLOAD BUTTON */}
+      {selectedStore && (
+        <a
+          href={`/api/auth/download-zip?store=${selectedStore}`}
+          style={{
+            display: "inline-block",
+            marginTop: "1.5rem",
+            padding: "0.6rem 1rem",
+            background: "#0070f3",
+            color: "white",
+            borderRadius: "6px",
+            textDecoration: "none",
+            fontWeight: "bold",
+          }}
+        >
+          Download ZIP
+        </a>
       )}
     </div>
   );
