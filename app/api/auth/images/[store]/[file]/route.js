@@ -5,6 +5,7 @@ import path from "path";
 
 export async function GET(request, { params }) {
   try {
+    // --- AUTH ---
     const user = getUserFromRequest(request);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -12,29 +13,31 @@ export async function GET(request, { params }) {
 
     const { store, file } = params;
 
-    // Path to your bundled assets inside the Next.js project
-    const imagePath = path.join(process.cwd(), "public", "sourcePNGs", file);
+    // --- Extract base SKU from ShipStation filenames ---
+    // Example: "CN-613HG-M-CN-3827.png" → "CN-613.png"
+    const baseSku = file.split(/[-_]/)[0] + ".png";
 
-    // Ensure the file exists
+    // Build absolute path to public/sourcePNGs
+    const imagePath = path.join(
+      process.cwd(),
+      "public",
+      "sourcePNGs",
+      baseSku
+    );
+
     if (!fs.existsSync(imagePath)) {
-      console.error("Image not found:", imagePath);
+      console.error(`❌ PNG not found for base SKU "${baseSku}" at ${imagePath}`);
       return NextResponse.json({ error: "Image not found" }, { status: 404 });
     }
 
-    const imageBuffer = fs.readFileSync(imagePath);
+    const buffer = fs.readFileSync(imagePath);
 
-    const ext = path.extname(file).toLowerCase();
-    const mime =
-      ext === ".png" ? "image/png" :
-      ext === ".jpg" || ext === ".jpeg" ? "image/jpeg" :
-      "application/octet-stream";
-
-    return new Response(imageBuffer, {
+    return new Response(buffer, {
       status: 200,
       headers: {
-        "Content-Type": mime,
+        "Content-Type": "image/png",
         "Cache-Control": "public, max-age=31536000",
-      }
+      },
     });
 
   } catch (err) {
