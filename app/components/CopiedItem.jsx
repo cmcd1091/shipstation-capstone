@@ -6,7 +6,7 @@ const CopiedItem = ({ file, selectedStore }) => {
   return (
     <li style={{ margin: "1rem" }}>
       <img
-        src={`/api/images/${selectedStore}/${file}`}
+        src={`/api/auth/images/${selectedStore}/${file}`}
         alt={file}
         style={{
           width: "100px",

@@ -1,36 +1,33 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/db";
+import { auth } from "../auth";             // adjust if your auth middleware is in a different folder
+import dbConnect from "@/lib/db";
 import Transfer from "@/models/Transfer";
-import { getUserFromRequest } from "@/lib/auth";
 
-export const dynamic = "force-dynamic";
-
-export async function GET(request) {
+export async function GET() {
   try {
-    await connectDB();
-
-    const user = getUserFromRequest(request);
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // --- AUTH CHECK ---
+    const session = await auth();
+    if (!session) {
+      return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const filters = {};
-    const store = searchParams.get("store");
-    const skipped = searchParams.get("skipped");
+    // --- DB CONNECTION ---
+    await dbConnect();
 
-    if (store) filters.store = store;
-    if (skipped !== null) filters.skipped = skipped === "true";
-
-    const transfers = await Transfer.find(filters)
+    // --- QUERY TRANSFERS ---
+    const transfers = await Transfer.find({})
       .sort({ createdAt: -1 })
-      .limit(200);
+      .lean();
 
-    return NextResponse.json(transfers);
+    return NextResponse.json({ success: true, transfers });
   } catch (err) {
-    console.error("Error fetching transfers from DB:", err);
-    return NextResponse.json(
-      { error: "Error fetching transfers from DB" },
+    console.error("Error fetching transfers:", err);
+    return new NextResponse(
+      JSON.stringify({
+        success: false,
+        message: "Failed to fetch transfers",
+        error: err.message,
+      }),
       { status: 500 }
     );
   }
@@ -38,21 +35,31 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    await connectDB();
-
-    const user = getUserFromRequest(request);
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // --- AUTH ---
+    const session = await auth();
+    if (!session) {
+      return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    // --- DB ---
+    await dbConnect();
+
+    // --- BODY ---
     const body = await request.json();
-    const transfer = await Transfer.create(body);
-    return NextResponse.json(transfer, { status: 201 });
+
+    // Insert into Mongo
+    const newTransfer = await Transfer.create(body);
+
+    return NextResponse.json({ success: true, transfer: newTransfer });
   } catch (err) {
-    console.error("Error creating transfer:", err);
-    return NextResponse.json(
-      { error: err.message || "Error creating transfer" },
-      { status: 400 }
+    console.error("Error saving transfer:", err);
+    return new NextResponse(
+      JSON.stringify({
+        success: false,
+        message: "Failed to save transfer",
+        error: err.message,
+      }),
+      { status: 500 }
     );
   }
 }
