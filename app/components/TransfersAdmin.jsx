@@ -17,12 +17,29 @@ export default function TransfersAdmin() {
       const res = await axios.get("/api/auth/transfers", {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       setTransfers(res.data);
     } catch (err) {
-      console.error("Error fetching transfers:", err);
+      console.error(err);
     }
     setLoading(false);
+  };
+
+  const clearHistory = async () => {
+    if (!token) return;
+
+    const confirmClear = window.confirm(
+      "Are you sure you want to clear ALL transfer history?"
+    );
+    if (!confirmClear) return;
+
+    try {
+      await axios.delete("/api/auth/transfers", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setTransfers([]);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   useEffect(() => {
@@ -30,16 +47,33 @@ export default function TransfersAdmin() {
   }, [token]);
 
   return (
-    <div style={{ marginTop: "2rem" }}>
+    <div style={{ margin: "2rem auto", maxWidth: "700px", textAlign: "center" }}>
       <h2>Transfer History</h2>
-      <button onClick={fetchTransfers} disabled={loading}>
-        {loading ? "Loading..." : "Refresh"}
-      </button>
+
+      <div style={{ marginBottom: "1rem" }}>
+        <button onClick={fetchTransfers} disabled={loading}>
+          Refresh
+        </button>
+
+        <button
+          onClick={clearHistory}
+          style={{
+            marginLeft: "1rem",
+            background: "#c0392b",
+            color: "white",
+            padding: "0.4rem 0.8rem",
+            borderRadius: "4px",
+            border: "none",
+          }}
+        >
+          Clear History
+        </button>
+      </div>
 
       {transfers.length === 0 ? (
         <p>No transfer history found.</p>
       ) : (
-        <ul style={{ padding: 0, listStyle: "none" }}>
+        <ul style={{ listStyle: "none", padding: 0 }}>
           {transfers.map((t) => (
             <li
               key={t._id}
@@ -52,7 +86,7 @@ export default function TransfersAdmin() {
             >
               <span>Order: {t.orderNumber}</span>
               <span>SKU: {t.sku}</span>
-              <span>{t.skipped ? "⛔️ Skipped" : "📦 Copied"}</span>
+              <span>{t.skipped ? "⛔ Skipped" : "📦 Copied"}</span>
             </li>
           ))}
         </ul>
