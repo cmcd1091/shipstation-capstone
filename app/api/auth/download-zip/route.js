@@ -1,60 +1,62 @@
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+import { NextResponse } from "next/server";
+import JSZip from "jszip";
 import fs from "fs";
 import path from "path";
-import archiver from "archiver";
-import { NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 
 export async function GET(request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const store = searchParams.get("store");
-    const token = searchParams.get("token");
-
-    // Inject token into Authorization header so getUserFromRequest works
-    if (token) {
-      request.headers.set("Authorization", `Bearer ${token}`);
-    }
-
     const user = getUserFromRequest(request);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!store) {
-      return NextResponse.json({ error: "Missing store" }, { status: 400 });
+    const { searchParams } = new URL(request.url);
+    const files = searchParams.getAll("file");
+    const store = searchParams.get("store");
+
+    if (!files.length || !store) {
+      return NextResponse.json(
+        { error: "Missing parameters" },
+        { status: 400 }
+      );
     }
 
-    const folderPath = path.join(process.cwd(), "FilesToPrint", store);
+    const zip = new JSZip();
 
-    if (!fs.existsSync(folderPath)) {
-      return NextResponse.json({ error: "Store folder not found" }, { status: 404 });
+    for (const file of files) {
+      // Compute base SKU from file name
+      const parts = file.split("-");
+      const rawSku = parts[1];
+      const digits = rawSku.replace(/\D/g, "").slice(0, 3);
+      const baseSku = `${parts[0]}-${digits}.png`;
+
+      const imagePath = path.join(
+        process.cwd(),
+        "public",
+        "sourcePNGs",
+        baseSku
+      );
+
+      if (fs.existsSync(imagePath)) {
+        const buffer = fs.readFileSync(imagePath);
+        zip.file(file, buffer);
+      }
     }
 
-    // Create temporary ZIP file path
-    const zipPath = path.join(process.cwd(), `temp-${store}.zip`);
-    const output = fs.createWriteStream(zipPath);
-    const archive = archiver("zip", { zlib: { level: 9 } });
-
-    archive.pipe(output);
-    archive.directory(folderPath, false);
-    await archive.finalize();
-
-    // Wait for file creation
-    await new Promise((resolve) => output.on("close", resolve));
-
-    // Read file into buffer
-    const zipBuffer = fs.readFileSync(zipPath);
-
-    // Delete temp ZIP after reading
-    fs.unlinkSync(zipPath);
+    const zipBuffer = await zip.generateAsync({ type: "nodebuffer" });
 
     return new Response(zipBuffer, {
       status: 200,
       headers: {
         "Content-Type": "application/zip",
-        "Content-Disposition": `attachment; filename="${store}.zip"`,
+        "Content-Disposition": `attachment; filename="${store}-images.zip"`,
       },
     });
+
   } catch (err) {
     console.error("ZIP route error:", err);
     return NextResponse.json(
