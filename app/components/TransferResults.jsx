@@ -2,7 +2,12 @@
 
 import { useAppContext } from "../context/AppContext";
 
-export default function TransferResults({ message, files, skipped, selectedStore }) {
+export default function TransferResults({
+  message,
+  files,
+  skipped,
+  selectedStore,
+}) {
   const { token } = useAppContext();
 
   return (
@@ -14,9 +19,11 @@ export default function TransferResults({ message, files, skipped, selectedStore
           <h3>Copied Files</h3>
           <ul style={{ listStyle: "none", padding: 0 }}>
             {files.map((file) => {
-              if (!selectedStore || !token) return null;
+              if (!token || !selectedStore) return null;
 
-              const url = `/api/auth/images/${selectedStore}/${file}?token=${token}`;
+              const url =
+                `/api/auth/images/${selectedStore}/${file}` +
+                `?token=${token}`;
 
               return (
                 <li
@@ -39,10 +46,6 @@ export default function TransferResults({ message, files, skipped, selectedStore
                       padding: "4px",
                       background: "white",
                     }}
-                    onError={(e) => {
-                      e.target.style.opacity = 0.3;
-                      e.target.title = "Not Found";
-                    }}
                   />
                   <span>{file}</span>
                 </li>
@@ -54,7 +57,7 @@ export default function TransferResults({ message, files, skipped, selectedStore
 
       {skipped.length > 0 && (
         <div style={{ marginTop: "1rem" }}>
-          <h3>Skipped Orders (already printed)</h3>
+          <h3>Skipped Orders</h3>
           <ul>
             {skipped.map((o) => (
               <li key={o}>{o}</li>
@@ -62,26 +65,6 @@ export default function TransferResults({ message, files, skipped, selectedStore
           </ul>
         </div>
       )}
-
-      {/* ✅ ZIP DOWNLOAD BUTTON */}
-      {selectedStore && token && (
-  <a
-    href={`/api/auth/download-zip?store=${selectedStore}&token=${token}`}
-    style={{
-      display: "inline-block",
-      marginTop: "1.5rem",
-      padding: "0.6rem 1rem",
-      background: "#0070f3",
-      color: "white",
-      borderRadius: "6px",
-      textDecoration: "none",
-      fontWeight: "bold",
-    }}
-  >
-    Download ZIP
-  </a>
-)}
-
     </div>
   );
 }
