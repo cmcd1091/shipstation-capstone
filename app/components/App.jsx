@@ -3,6 +3,7 @@
 import { useState } from "react";
 import FetchParams from "./FetchParams";
 import TransferResults from "./TransferResults";
+import TransfersAdmin from "./TransfersAdmin";
 
 export default function App() {
   const [selectedStore, setSelectedStore] = useState("");
@@ -28,6 +29,8 @@ export default function App() {
         skipped={skipped}
         selectedStore={selectedStore}   /* ← IMPORTANT */
       />
+
+      <TransfersAdmin />
     </div>
   );
 }

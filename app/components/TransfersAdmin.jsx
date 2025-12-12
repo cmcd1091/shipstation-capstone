@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useAppContext } from "../context/AppContext";
 
-const TransfersAdmin = () => {
+export default function TransfersAdmin() {
   const { token } = useAppContext();
   const [transfers, setTransfers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -15,9 +15,7 @@ const TransfersAdmin = () => {
     setLoading(true);
     try {
       const res = await axios.get("/api/auth/transfers", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       setTransfers(res.data);
@@ -32,11 +30,12 @@ const TransfersAdmin = () => {
   }, [token]);
 
   return (
-    <div style={{ margin: "1rem auto", maxWidth: "600px", textAlign: "center" }}>
+    <div style={{ marginTop: "2rem" }}>
       <h2>Transfer History</h2>
       <button onClick={fetchTransfers} disabled={loading}>
         {loading ? "Loading..." : "Refresh"}
       </button>
+
       {transfers.length === 0 ? (
         <p>No transfer history found.</p>
       ) : (
@@ -60,6 +59,4 @@ const TransfersAdmin = () => {
       )}
     </div>
   );
-};
-
-export default TransfersAdmin;
+}
