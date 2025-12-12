@@ -8,45 +8,22 @@ export default function TransferResults({
   skipped,
   selectedStore,
   onClearHistory,
-  onRefresh,
 }) {
   const { token } = useAppContext();
-
-  const hasAnything =
-    message || files.length > 0 || skipped.length > 0;
-
-  if (!hasAnything && !selectedStore) return null;
 
   return (
     <div style={{ marginTop: "2rem" }}>
       {/* ===============================
-          HEADER + ACTIONS
+          STATUS MESSAGE
          =============================== */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "1rem",
-        }}
-      >
-        <h3>Transfer Results</h3>
-
-        <div style={{ display: "flex", gap: "0.75rem" }}>
-          {onRefresh && (
-            <button onClick={onRefresh}>
-              Refresh
-            </button>
-          )}
-
-          <button onClick={onClearHistory}>
-            Clear History
-          </button>
-        </div>
-      </div>
+      {message && (
+        <p>
+          <strong>{message}</strong>
+        </p>
+      )}
 
       {/* ===============================
-          ✅ ZIP DOWNLOAD BUTTON (RESTORED)
+          ✅ ZIP DOWNLOAD BUTTON (WORKING VERSION)
          =============================== */}
       {selectedStore && token && (
         <a
@@ -67,30 +44,72 @@ export default function TransferResults({
       )}
 
       {/* ===============================
-          RESULTS
+          🧹 CLEAR HISTORY BUTTON
          =============================== */}
-      {message && <p>{message}</p>}
-
-      {files.length > 0 && (
-        <>
-          <h4>Files</h4>
-          <ul>
-            {files.map((f) => (
-              <li key={f}>{f}</li>
-            ))}
-          </ul>
-        </>
+      {onClearHistory && (
+        <div style={{ marginBottom: "1.5rem" }}>
+          <button onClick={onClearHistory}>
+            Clear History
+          </button>
+        </div>
       )}
 
+      {/* ===============================
+          🖼️ THUMBNAILS (UNCHANGED, WORKING)
+         =============================== */}
+      {files.length > 0 && (
+        <div>
+          <h3>Copied Files</h3>
+          <ul style={{ listStyle: "none", padding: 0 }}>
+            {files.map((file) => {
+              if (!token || !selectedStore) return null;
+
+              const url =
+                `/api/auth/images/${selectedStore}/${file}` +
+                `?token=${token}`;
+
+              return (
+                <li
+                  key={file}
+                  style={{
+                    marginBottom: "1rem",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "1rem",
+                  }}
+                >
+                  <img
+                    src={url}
+                    alt={file}
+                    style={{
+                      width: "80px",
+                      height: "80px",
+                      objectFit: "contain",
+                      border: "1px solid #ccc",
+                      padding: "4px",
+                      background: "white",
+                    }}
+                  />
+                  <span>{file}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {/* ===============================
+          SKIPPED FILES
+         =============================== */}
       {skipped.length > 0 && (
-        <>
-          <h4>Skipped</h4>
+        <div style={{ marginTop: "1rem" }}>
+          <h3>Skipped Orders</h3>
           <ul>
-            {skipped.map((f) => (
-              <li key={f}>{f}</li>
+            {skipped.map((o) => (
+              <li key={o}>{o}</li>
             ))}
           </ul>
-        </>
+        </div>
       )}
     </div>
   );
