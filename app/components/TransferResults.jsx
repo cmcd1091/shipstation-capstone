@@ -22,12 +22,16 @@ export default function TransferResults({
         </p>
       )}
 
-      {/* ===============================
-          ✅ ZIP DOWNLOAD BUTTON (WORKING VERSION)
-         =============================== */}
-      {selectedStore && token && (
+      {/* ====================
+          ZIP DOWNLOAD BUTTON 
+         ===================== */}
+      {selectedStore && token && files.length > 0 && (
         <a
-          href={`/api/auth/download-zip?store=${selectedStore}&token=${token}`}
+          href={`/api/auth/download-zip?store=${encodeURIComponent(
+            selectedStore
+          )}&token=${encodeURIComponent(token)}&${files
+            .map((f) => `file=${encodeURIComponent(f)}`)
+            .join("&")}`}
           style={{
             display: "inline-block",
             marginBottom: "1.5rem",
@@ -43,6 +47,7 @@ export default function TransferResults({
         </a>
       )}
 
+
       {/* ===============================
           🧹 CLEAR HISTORY BUTTON
          =============================== */}
@@ -54,9 +59,9 @@ export default function TransferResults({
         </div>
       )}
 
-      {/* ===============================
-          🖼️ THUMBNAILS (UNCHANGED, WORKING)
-         =============================== */}
+      {/* ============
+          THUMBNAILS
+         ============= */}
       {files.length > 0 && (
         <div>
           <h3>Copied Files</h3>
@@ -102,11 +107,24 @@ export default function TransferResults({
           SKIPPED FILES
          =============================== */}
       {skipped.length > 0 && (
-        <div style={{ marginTop: "1rem" }}>
-          <h3>Skipped Orders</h3>
+        <div
+          style={{
+            marginTop: "1.5rem",
+            padding: "1rem",
+            border: "1px solid #f5c2c7",
+            background: "#f8d7da",
+            borderRadius: "6px",
+          }}
+        >
+          <h3 style={{ marginTop: 0 }}>
+            ⚠️ Files Not Found
+          </h3>
+          <p>
+            The following files could not be located and were skipped:
+          </p>
           <ul>
-            {skipped.map((o) => (
-              <li key={o}>{o}</li>
+            {skipped.map((f) => (
+              <li key={f}>{f}</li>
             ))}
           </ul>
         </div>
