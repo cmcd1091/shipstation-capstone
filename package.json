@@ -2,6 +2,7 @@
   "name": "shipstation-capstone",
   "version": "1.0.0",
   "scripts": {
+    "test": "jest",
     "dev": "next dev",
     "build": "next build",
     "start": "next start"
@@ -23,6 +24,7 @@
   "devDependencies": {
     "@types/node": "25.0.0",
     "@types/react": "19.2.7",
+    "jest": "^30.2.0",
     "typescript": "5.9.3"
   }
 }
