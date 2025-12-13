@@ -68,3 +68,5 @@ The application is deployed on Render and configured to build and run using Node
 - JWT_SECRET=loginauthsecret
 - ADMIN_EMAIL=admin@example.com
 - ADMIN_PASSWORD=test123
+
+<!-- Capstone Step 6 submission -->
