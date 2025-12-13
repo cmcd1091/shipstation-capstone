@@ -86,7 +86,7 @@ export default function TransfersAdmin() {
             >
               <span>Order: {t.orderNumber}</span>
               <span>SKU: {t.sku}</span>
-              <span>{t.skipped ? "⛔ Skipped" : "📦 Copied"}</span>
+              <span>{t.skipped ? "⛔ Skipped" : "Copied"}</span>
             </li>
           ))}
         </ul>
